@@ -34,7 +34,7 @@ public class Script : ScriptBase
         HttpRequestMessage request = this.Context.Request;
         request.Method = HttpMethod.Post;
         request.RequestUri = new Uri(MondayGraphQlEndpoint);
-        request.Content = new StringContent(graphQlBody.ToString(Formatting.None), Encoding.UTF8, "application/json");
+        request.Content = new StringContent(graphQlBody.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json");
 
         // Authentication is configured on the connector connection. Keep any Authorization
         // header that Power Platform already applied to this request and only add the monday
@@ -161,7 +161,7 @@ public class Script : ScriptBase
         // monday.com's JSON scalar is safest through Power Platform when the variable
         // value is a string containing monday-compatible JSON. Do not parse and re-emit
         // user JSON here; pass raw JSON scalar strings through to monday.com.
-        string statusValue = new JObject { ["label"] = label }.ToString(Formatting.None);
+        string statusValue = new JObject { ["label"] = label }.ToString(Newtonsoft.Json.Formatting.None);
 
         graphQlBody = GraphQl(
             "mutation ChangeMondayStatus($boardId: ID!, $itemId: ID!, $columnId: String!, $statusValue: JSON!) { change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $statusValue) { id } }",
@@ -253,7 +253,7 @@ public class Script : ScriptBase
             return null;
         }
 
-        return token.Type == JTokenType.String ? (string)token : token.ToString(Formatting.None);
+        return token.Type == JTokenType.String ? (string)token : token.ToString(Newtonsoft.Json.Formatting.None);
     }
 
     private static HttpResponseMessage MissingField(string fieldName)
@@ -271,7 +271,7 @@ public class Script : ScriptBase
 
         return new HttpResponseMessage(HttpStatusCode.BadRequest)
         {
-            Content = new StringContent(body.ToString(Formatting.None), Encoding.UTF8, "application/json")
+            Content = new StringContent(body.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json")
         };
     }
 
