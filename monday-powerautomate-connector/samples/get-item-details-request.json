@@ -1,0 +1,6 @@
+{
+  "query": "query GetMondayItemDetails($itemId: [ID!]!) { items(ids: $itemId) { id name board { id name } group { id title } column_values { id text value type } } }",
+  "variables": {
+    "itemId": "<ITEM_ID>"
+  }
+}

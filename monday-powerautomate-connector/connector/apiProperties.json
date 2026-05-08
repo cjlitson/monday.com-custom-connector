@@ -1,0 +1,23 @@
+{
+  "properties": {
+    "connectionParameters": {
+      "api_key": {
+        "type": "securestring",
+        "uiDefinition": {
+          "displayName": "monday.com API token",
+          "description": "Enter your monday.com API token. It will be sent in the Authorization header for each request.",
+          "tooltip": "Paste a monday.com API token. Do not include this token in source control.",
+          "constraints": {
+            "tabIndex": 2,
+            "clearText": false,
+            "required": "true"
+          }
+        }
+      }
+    },
+    "iconBrandColor": "#00C875",
+    "capabilities": [],
+    "publisher": "LV",
+    "stackOwner": "monday.com"
+  }
+}
