@@ -24,7 +24,20 @@
       "CreateMondayItemUpdate",
       "ChangeMondayStatus",
       "ChangeMondayColumnValue",
-      "CreateMondayItem"
+      "CreateMondayItem",
+      "ListMondayWorkspaces",
+      "ListMondayBoards",
+      "ListMondayBoardGroups",
+      "ListMondayBoardColumns",
+      "ListMondayBoardItems",
+      "ListMondayStatusLabels",
+      "ChangeMondayDateColumn",
+      "ChangeMondayTextColumn",
+      "ChangeMondayNumberColumn",
+      "CreateMondaySubitem",
+      "GetMondaySubitems",
+      "GetMondaySubitemDetails",
+      "ChangeMondaySubitemColumnValue"
     ]
   }
 }

@@ -44,7 +44,13 @@ public class Script : ScriptBase
             request.Headers.TryAddWithoutValidation("API-Version", DefaultMondayApiVersion);
         }
 
-        return await this.Context.SendAsync(request, this.CancellationToken).ConfigureAwait(false);
+        HttpResponseMessage response = await this.Context.SendAsync(request, this.CancellationToken).ConfigureAwait(false);
+        if (!IsMetadataListOperation(operationId))
+        {
+            return response;
+        }
+
+        return await BuildDropdownResponseAsync(operationId, input, response).ConfigureAwait(false);
     }
 
     private static string NormalizeOperationId(string operationId)
@@ -108,6 +114,32 @@ public class Script : ScriptBase
                 return BuildChangeMondayColumnValue(input, out graphQlBody);
             case "CreateMondayItem":
                 return BuildCreateMondayItem(input, out graphQlBody);
+            case "ListMondayWorkspaces":
+                return BuildListMondayWorkspaces(input, out graphQlBody);
+            case "ListMondayBoards":
+                return BuildListMondayBoards(input, out graphQlBody);
+            case "ListMondayBoardGroups":
+                return BuildListMondayBoardGroups(input, out graphQlBody);
+            case "ListMondayBoardColumns":
+                return BuildListMondayBoardColumns(input, out graphQlBody);
+            case "ListMondayBoardItems":
+                return BuildListMondayBoardItems(input, out graphQlBody);
+            case "ListMondayStatusLabels":
+                return BuildListMondayStatusLabels(input, out graphQlBody);
+            case "ChangeMondayDateColumn":
+                return BuildChangeMondayDateColumn(input, out graphQlBody);
+            case "ChangeMondayTextColumn":
+                return BuildChangeMondayTextColumn(input, out graphQlBody);
+            case "ChangeMondayNumberColumn":
+                return BuildChangeMondayNumberColumn(input, out graphQlBody);
+            case "CreateMondaySubitem":
+                return BuildCreateMondaySubitem(input, out graphQlBody);
+            case "GetMondaySubitems":
+                return BuildGetMondaySubitems(input, out graphQlBody);
+            case "GetMondaySubitemDetails":
+                return BuildGetMondaySubitemDetails(input, out graphQlBody);
+            case "ChangeMondaySubitemColumnValue":
+                return BuildChangeMondaySubitemColumnValue(input, out graphQlBody);
             default:
                 return BadRequest("UnsupportedOperation", $"Operation '{operationId}' is not supported by this connector script.");
         }
@@ -123,7 +155,7 @@ public class Script : ScriptBase
         }
 
         graphQlBody = GraphQl(
-            "query GetMondayItemDetails($itemIds: [ID!]!) { items(ids: $itemIds) { id name board { id name } group { id title } column_values { id text value type } } }",
+            "query GetMondayItemDetails($itemIds: [ID!]!) { items(ids: $itemIds) { id name board { id name } group { id title } parent_item { id name } column_values { id text value type } } }",
             new JObject { ["itemIds"] = new JArray(itemId) });
         return null;
     }
@@ -158,14 +190,9 @@ public class Script : ScriptBase
             columnId = "status";
         }
 
-        // monday.com's JSON scalar is safest through Power Platform when the variable
-        // value is a string containing monday-compatible JSON. Do not parse and re-emit
-        // user JSON here; pass raw JSON scalar strings through to monday.com.
         string statusValue = new JObject { ["label"] = label }.ToString(Newtonsoft.Json.Formatting.None);
 
-        graphQlBody = GraphQl(
-            "mutation ChangeMondayStatus($boardId: ID!, $itemId: ID!, $columnId: String!, $statusValue: JSON!) { change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $statusValue) { id } }",
-            new JObject { ["boardId"] = boardId, ["itemId"] = itemId, ["columnId"] = columnId, ["statusValue"] = statusValue });
+        graphQlBody = ChangeColumnValueGraphQl("ChangeMondayStatus", boardId, itemId, columnId, statusValue);
         return null;
     }
 
@@ -181,12 +208,7 @@ public class Script : ScriptBase
         if (columnId == null) return MissingField("columnId");
         if (value == null) return MissingField("value");
 
-        // value is a monday-compatible JSON scalar string, for example:
-        // {"text":"Example"} or {"label":"Done"}. Keep it as a string
-        // in GraphQL variables so it is not double-escaped by hand-built GraphQL.
-        graphQlBody = GraphQl(
-            "mutation ChangeMondayColumnValue($boardId: ID!, $itemId: ID!, $columnId: String!, $columnValue: JSON!) { change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $columnValue) { id } }",
-            new JObject { ["boardId"] = boardId, ["itemId"] = itemId, ["columnId"] = columnId, ["columnValue"] = value });
+        graphQlBody = ChangeColumnValueGraphQl("ChangeMondayColumnValue", boardId, itemId, columnId, value);
         return null;
     }
 
@@ -218,9 +240,6 @@ public class Script : ScriptBase
         {
             declarations += ", $columnValues: JSON";
             arguments += ", column_values: $columnValues";
-            // columnValues is an optional monday-compatible JSON scalar string.
-            // Leave the string intact rather than parsing it to avoid changing the
-            // caller's intended column-type-specific JSON shape.
             variables["columnValues"] = columnValues;
         }
 
@@ -228,6 +247,322 @@ public class Script : ScriptBase
             $"mutation CreateMondayItem({declarations}) {{ create_item({arguments}) {{ id name board {{ id }} }} }}",
             variables);
         return null;
+    }
+
+    private static HttpResponseMessage BuildListMondayWorkspaces(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = GraphQl("query ListMondayWorkspaces { workspaces { id name } }", new JObject());
+        return null;
+    }
+
+    private static HttpResponseMessage BuildListMondayBoards(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string workspaceId = OptionalString(input, "workspaceId");
+        if (string.IsNullOrWhiteSpace(workspaceId))
+        {
+            graphQlBody = GraphQl("query ListMondayBoards { boards(limit: 500) { id name hierarchy_type workspace { id name } } }", new JObject());
+        }
+        else
+        {
+            graphQlBody = GraphQl("query ListMondayBoards($workspaceIds: [ID!]) { boards(limit: 500, workspace_ids: $workspaceIds) { id name hierarchy_type workspace { id name } } }", new JObject { ["workspaceIds"] = new JArray(workspaceId) });
+        }
+
+        return null;
+    }
+
+    private static HttpResponseMessage BuildListMondayBoardGroups(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string boardId = RequiredString(input, "boardId");
+        if (boardId == null) return MissingField("boardId");
+
+        graphQlBody = GraphQl("query ListMondayBoardGroups($boardIds: [ID!]!) { boards(ids: $boardIds) { id groups { id title } } }", new JObject { ["boardIds"] = new JArray(boardId) });
+        return null;
+    }
+
+    private static HttpResponseMessage BuildListMondayBoardColumns(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string boardId = RequiredString(input, "boardId");
+        if (boardId == null) return MissingField("boardId");
+
+        graphQlBody = GraphQl("query ListMondayBoardColumns($boardIds: [ID!]!) { boards(ids: $boardIds) { id columns { id title type settings_str } } }", new JObject { ["boardIds"] = new JArray(boardId) });
+        return null;
+    }
+
+    private static HttpResponseMessage BuildListMondayBoardItems(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string boardId = RequiredString(input, "boardId");
+        int limit = OptionalInt(input, "limit", 100);
+        if (boardId == null) return MissingField("boardId");
+        if (limit < 1 || limit > 500) return BadRequest("InvalidLimit", "The 'limit' field must be between 1 and 500.");
+
+        graphQlBody = GraphQl("query ListMondayBoardItems($boardIds: [ID!]!, $limit: Int!) { boards(ids: $boardIds) { id items_page(limit: $limit) { cursor items { id name } } } }", new JObject { ["boardIds"] = new JArray(boardId), ["limit"] = limit });
+        return null;
+    }
+
+    private static HttpResponseMessage BuildListMondayStatusLabels(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string boardId = RequiredString(input, "boardId");
+        string columnId = RequiredString(input, "columnId");
+        if (boardId == null) return MissingField("boardId");
+        if (columnId == null) return MissingField("columnId");
+
+        graphQlBody = GraphQl("query ListMondayStatusLabels($boardIds: [ID!]!) { boards(ids: $boardIds) { id columns { id title type settings_str } } }", new JObject { ["boardIds"] = new JArray(boardId) });
+        return null;
+    }
+
+    private static HttpResponseMessage BuildChangeMondayDateColumn(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string boardId = RequiredString(input, "boardId");
+        string itemId = RequiredString(input, "itemId");
+        string columnId = RequiredString(input, "columnId");
+        string date = RequiredString(input, "date");
+        string time = OptionalString(input, "time");
+        if (boardId == null) return MissingField("boardId");
+        if (itemId == null) return MissingField("itemId");
+        if (columnId == null) return MissingField("columnId");
+        if (date == null) return MissingField("date");
+
+        JObject value = new JObject { ["date"] = date };
+        if (!string.IsNullOrWhiteSpace(time))
+        {
+            value["time"] = time;
+        }
+
+        graphQlBody = ChangeColumnValueGraphQl("ChangeMondayDateColumn", boardId, itemId, columnId, value.ToString(Newtonsoft.Json.Formatting.None));
+        return null;
+    }
+
+    private static HttpResponseMessage BuildChangeMondayTextColumn(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string boardId = RequiredString(input, "boardId");
+        string itemId = RequiredString(input, "itemId");
+        string columnId = RequiredString(input, "columnId");
+        string text = RequiredString(input, "text");
+        if (boardId == null) return MissingField("boardId");
+        if (itemId == null) return MissingField("itemId");
+        if (columnId == null) return MissingField("columnId");
+        if (text == null) return MissingField("text");
+
+        // monday text columns accept a JSON scalar string through change_column_value.
+        // Passing the raw text as the JSON variable value avoids forcing makers to type
+        // {"text":"..."} while still using monday's documented JSON scalar path.
+        graphQlBody = ChangeColumnValueGraphQl("ChangeMondayTextColumn", boardId, itemId, columnId, text);
+        return null;
+    }
+
+    private static HttpResponseMessage BuildChangeMondayNumberColumn(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string boardId = RequiredString(input, "boardId");
+        string itemId = RequiredString(input, "itemId");
+        string columnId = RequiredString(input, "columnId");
+        JToken numberToken = input == null ? null : input["number"];
+        if (boardId == null) return MissingField("boardId");
+        if (itemId == null) return MissingField("itemId");
+        if (columnId == null) return MissingField("columnId");
+        if (numberToken == null || numberToken.Type == JTokenType.Null) return MissingField("number");
+
+        string numberValue = numberToken.Type == JTokenType.String ? (string)numberToken : numberToken.ToString(Newtonsoft.Json.Formatting.None);
+        graphQlBody = ChangeColumnValueGraphQl("ChangeMondayNumberColumn", boardId, itemId, columnId, numberValue);
+        return null;
+    }
+
+    private static HttpResponseMessage BuildCreateMondaySubitem(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string parentItemId = RequiredString(input, "parentItemId");
+        string itemName = RequiredString(input, "itemName");
+        string columnValues = OptionalString(input, "columnValues");
+        if (parentItemId == null) return MissingField("parentItemId");
+        if (itemName == null) return MissingField("itemName");
+
+        string declarations = "$parentItemId: ID!, $itemName: String!";
+        string arguments = "parent_item_id: $parentItemId, item_name: $itemName";
+        JObject variables = new JObject { ["parentItemId"] = parentItemId, ["itemName"] = itemName };
+
+        if (!string.IsNullOrWhiteSpace(columnValues))
+        {
+            declarations += ", $columnValues: JSON";
+            arguments += ", column_values: $columnValues";
+            variables["columnValues"] = columnValues;
+        }
+
+        graphQlBody = GraphQl($"mutation CreateMondaySubitem({declarations}) {{ create_subitem({arguments}) {{ id name }} }}", variables);
+        return null;
+    }
+
+    private static HttpResponseMessage BuildGetMondaySubitems(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string parentItemId = RequiredString(input, "parentItemId");
+        if (parentItemId == null) return MissingField("parentItemId");
+
+        graphQlBody = GraphQl("query GetMondaySubitems($itemIds: [ID!]!) { items(ids: $itemIds) { id name subitems { id name parent_item { id name } board { id name } column_values { id text value type } } } }", new JObject { ["itemIds"] = new JArray(parentItemId) });
+        return null;
+    }
+
+    private static HttpResponseMessage BuildGetMondaySubitemDetails(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string subitemId = RequiredString(input, "subitemId");
+        if (subitemId == null) return MissingField("subitemId");
+
+        graphQlBody = GraphQl("query GetMondaySubitemDetails($itemIds: [ID!]!) { items(ids: $itemIds) { id name board { id name } group { id title } parent_item { id name } column_values { id text value type } } }", new JObject { ["itemIds"] = new JArray(subitemId) });
+        return null;
+    }
+
+    private static HttpResponseMessage BuildChangeMondaySubitemColumnValue(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string boardId = RequiredString(input, "boardId");
+        string subitemId = RequiredString(input, "subitemId");
+        string columnId = RequiredString(input, "columnId");
+        string value = RequiredString(input, "value");
+        if (boardId == null) return MissingField("boardId");
+        if (subitemId == null) return MissingField("subitemId");
+        if (columnId == null) return MissingField("columnId");
+        if (value == null) return MissingField("value");
+
+        graphQlBody = ChangeColumnValueGraphQl("ChangeMondaySubitemColumnValue", boardId, subitemId, columnId, value);
+        return null;
+    }
+
+    private static JObject ChangeColumnValueGraphQl(string operationName, string boardId, string itemId, string columnId, string value)
+    {
+        return GraphQl(
+            $"mutation {operationName}($boardId: ID!, $itemId: ID!, $columnId: String!, $columnValue: JSON!) {{ change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $columnValue) {{ id }} }}",
+            new JObject { ["boardId"] = boardId, ["itemId"] = itemId, ["columnId"] = columnId, ["columnValue"] = value });
+    }
+
+    private static async Task<HttpResponseMessage> BuildDropdownResponseAsync(string operationId, JObject input, HttpResponseMessage mondayResponse)
+    {
+        string content = mondayResponse.Content == null ? null : await mondayResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+        if (!mondayResponse.IsSuccessStatusCode || string.IsNullOrWhiteSpace(content))
+        {
+            mondayResponse.Content = new StringContent(content ?? string.Empty, Encoding.UTF8, "application/json");
+            return mondayResponse;
+        }
+
+        JObject raw;
+        try
+        {
+            raw = JObject.Parse(content);
+        }
+        catch (JsonException)
+        {
+            mondayResponse.Content = new StringContent(content, Encoding.UTF8, "application/json");
+            return mondayResponse;
+        }
+
+        JArray values = new JArray();
+        string cursor = null;
+
+        if (operationId == "ListMondayWorkspaces")
+        {
+            foreach (JToken workspace in raw.SelectTokens("data.workspaces[*]"))
+            {
+                values.Add(new JObject { ["id"] = AsString(workspace["id"]), ["name"] = AsString(workspace["name"]) });
+            }
+        }
+        else if (operationId == "ListMondayBoards")
+        {
+            foreach (JToken board in raw.SelectTokens("data.boards[*]"))
+            {
+                values.Add(new JObject
+                {
+                    ["id"] = AsString(board["id"]),
+                    ["name"] = AsString(board["name"]),
+                    ["workspaceId"] = AsString(board["workspace"]?["id"]),
+                    ["workspaceName"] = AsString(board["workspace"]?["name"]),
+                    ["hierarchy_type"] = AsString(board["hierarchy_type"])
+                });
+            }
+        }
+        else if (operationId == "ListMondayBoardGroups")
+        {
+            foreach (JToken group in raw.SelectTokens("data.boards[*].groups[*]"))
+            {
+                string title = AsString(group["title"]);
+                values.Add(new JObject { ["id"] = AsString(group["id"]), ["title"] = title, ["name"] = title });
+            }
+        }
+        else if (operationId == "ListMondayBoardColumns" || operationId == "ListMondayStatusLabels")
+        {
+            string requestedColumnType = OptionalString(input, "columnType");
+            string requestedColumnId = OptionalString(input, "columnId");
+            foreach (JToken column in raw.SelectTokens("data.boards[*].columns[*]"))
+            {
+                if (operationId == "ListMondayBoardColumns")
+                {
+                    if (string.IsNullOrWhiteSpace(requestedColumnType) || string.Equals(AsString(column["type"]), requestedColumnType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        values.Add(new JObject { ["id"] = AsString(column["id"]), ["title"] = AsString(column["title"]), ["name"] = AsString(column["title"]), ["type"] = AsString(column["type"]), ["settings_str"] = AsString(column["settings_str"]) });
+                    }
+                }
+                else if (AsString(column["id"]) == requestedColumnId && AsString(column["type"]) == "status")
+                {
+                    AddStatusLabels(values, AsString(column["settings_str"]));
+                }
+            }
+        }
+        else if (operationId == "ListMondayBoardItems")
+        {
+            foreach (JToken page in raw.SelectTokens("data.boards[*].items_page"))
+            {
+                cursor = cursor ?? AsString(page["cursor"]);
+                foreach (JToken item in page.SelectTokens("items[*]"))
+                {
+                    values.Add(new JObject { ["id"] = AsString(item["id"]), ["name"] = AsString(item["name"]) });
+                }
+            }
+        }
+
+        JObject friendly = new JObject { ["value"] = values, ["raw"] = raw };
+        if (!string.IsNullOrWhiteSpace(cursor))
+        {
+            friendly["cursor"] = cursor;
+        }
+
+        return new HttpResponseMessage(mondayResponse.StatusCode)
+        {
+            Content = new StringContent(friendly.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json")
+        };
+    }
+
+    private static void AddStatusLabels(JArray values, string settings)
+    {
+        if (string.IsNullOrWhiteSpace(settings))
+        {
+            return;
+        }
+
+        JObject parsed;
+        try
+        {
+            parsed = JObject.Parse(settings);
+        }
+        catch (JsonException)
+        {
+            return;
+        }
+
+        JObject labels = parsed["labels"] as JObject;
+        if (labels == null)
+        {
+            return;
+        }
+
+        foreach (JProperty label in labels.Properties())
+        {
+            values.Add(new JObject { ["id"] = label.Name, ["key"] = label.Name, ["title"] = AsString(label.Value), ["name"] = AsString(label.Value) });
+        }
     }
 
     private static JObject GraphQl(string query, JObject variables)
@@ -256,6 +591,28 @@ public class Script : ScriptBase
         return token.Type == JTokenType.String ? (string)token : token.ToString(Newtonsoft.Json.Formatting.None);
     }
 
+    private static int OptionalInt(JObject input, string fieldName, int defaultValue)
+    {
+        JToken token = input == null ? null : input[fieldName];
+        if (token == null || token.Type == JTokenType.Null)
+        {
+            return defaultValue;
+        }
+
+        int value;
+        return int.TryParse(token.ToString(), out value) ? value : defaultValue;
+    }
+
+    private static string AsString(JToken token)
+    {
+        if (token == null || token.Type == JTokenType.Null)
+        {
+            return null;
+        }
+
+        return token.Type == JTokenType.String ? (string)token : token.ToString(Newtonsoft.Json.Formatting.None);
+    }
+
     private static HttpResponseMessage MissingField(string fieldName)
     {
         return BadRequest("MissingRequiredField", $"The '{fieldName}' field is required.");
@@ -275,12 +632,35 @@ public class Script : ScriptBase
         };
     }
 
+    private static bool IsMetadataListOperation(string operationId)
+    {
+        return operationId == "ListMondayWorkspaces"
+            || operationId == "ListMondayBoards"
+            || operationId == "ListMondayBoardGroups"
+            || operationId == "ListMondayBoardColumns"
+            || operationId == "ListMondayBoardItems"
+            || operationId == "ListMondayStatusLabels";
+    }
+
     private static bool IsKnownOperation(string operationId)
     {
         return operationId == "GetMondayItemDetails"
             || operationId == "CreateMondayItemUpdate"
             || operationId == "ChangeMondayStatus"
             || operationId == "ChangeMondayColumnValue"
-            || operationId == "CreateMondayItem";
+            || operationId == "CreateMondayItem"
+            || operationId == "ListMondayWorkspaces"
+            || operationId == "ListMondayBoards"
+            || operationId == "ListMondayBoardGroups"
+            || operationId == "ListMondayBoardColumns"
+            || operationId == "ListMondayBoardItems"
+            || operationId == "ListMondayStatusLabels"
+            || operationId == "ChangeMondayDateColumn"
+            || operationId == "ChangeMondayTextColumn"
+            || operationId == "ChangeMondayNumberColumn"
+            || operationId == "CreateMondaySubitem"
+            || operationId == "GetMondaySubitems"
+            || operationId == "GetMondaySubitemDetails"
+            || operationId == "ChangeMondaySubitemColumnValue";
     }
 }

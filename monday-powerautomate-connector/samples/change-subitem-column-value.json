@@ -1,0 +1,6 @@
+{
+  "boardId": "<SUBITEMS_BOARD_ID_OR_MAIN_BOARD_ID>",
+  "subitemId": "<SUBITEM_ID>",
+  "columnId": "<COLUMN_ID>",
+  "value": "{\"text\":\"Updated subitem value\"}"
+}
