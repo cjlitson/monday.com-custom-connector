@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "LV monday.com Actions",
-    "description": "Direct Power Automate custom connector for monday.com GraphQL API actions. This connector sends requests directly to https://api.monday.com/v2 and does not require Azure Functions or middleware.",
+    "title": "LV monday.com GraphQL",
+    "description": "Version 1 direct Power Automate custom connector for monday.com GraphQL. This connector sends one generic GraphQL request directly to https://api.monday.com/v2 and does not require Azure Functions or middleware.",
     "version": "1.0.0"
   },
   "host": "api.monday.com",
@@ -21,7 +21,7 @@
       "type": "apiKey",
       "name": "Authorization",
       "in": "header",
-      "description": "Enter your monday.com API token. The token is supplied by the Power Automate connection and is not stored in this file."
+      "description": "Enter your monday.com API token when creating the connector connection. The token is supplied by Power Automate in the Authorization header and is not hard-coded or stored in this file."
     }
   },
   "security": [
@@ -46,9 +46,9 @@
   "paths": {
     "/": {
       "post": {
-        "summary": "Get monday item details",
-        "description": "Returns the item id, item name, board details, group details, and column values for a monday.com item.",
-        "operationId": "GetMondayItemDetails",
+        "summary": "Run monday GraphQL request",
+        "description": "Runs a monday.com GraphQL query or mutation against the direct monday.com GraphQL endpoint.",
+        "operationId": "RunMondayGraphQL",
         "x-ms-visibility": "important",
         "parameters": [
           {
@@ -56,183 +56,21 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/GetMondayItemDetailsRequest"
+              "$ref": "#/definitions/RunMondayGraphQLRequest"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "monday.com GraphQL response containing item details.",
+            "description": "Raw monday.com GraphQL response.",
             "schema": {
-              "$ref": "#/definitions/GetMondayItemDetailsResponse"
+              "$ref": "#/definitions/RunMondayGraphQLResponse"
             }
           },
           "default": {
-            "description": "monday.com GraphQL error response.",
+            "description": "monday.com GraphQL or HTTP error response.",
             "schema": {
-              "$ref": "#/definitions/MondayGraphQlErrorResponse"
-            }
-          }
-        }
-      }
-    }
-  },
-  "x-ms-paths": {
-    "/?operation=CreateMondayItemUpdate": {
-      "post": {
-        "summary": "Create monday item update/comment",
-        "description": "Creates an update/comment on a monday.com item by calling the create_update GraphQL mutation.",
-        "operationId": "CreateMondayItemUpdate",
-        "x-ms-visibility": "important",
-        "parameters": [
-          {
-            "name": "operation",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "default": "CreateMondayItemUpdate",
-            "x-ms-visibility": "internal"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CreateMondayItemUpdateRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "monday.com GraphQL response containing the created update.",
-            "schema": {
-              "$ref": "#/definitions/CreateMondayItemUpdateResponse"
-            }
-          },
-          "default": {
-            "description": "monday.com GraphQL error response.",
-            "schema": {
-              "$ref": "#/definitions/MondayGraphQlErrorResponse"
-            }
-          }
-        }
-      }
-    },
-    "/?operation=ChangeMondayStatus": {
-      "post": {
-        "summary": "Change monday status column",
-        "description": "Changes a monday.com status column by label using the change_column_value GraphQL mutation. The column value is formatted as a monday status label JSON object.",
-        "operationId": "ChangeMondayStatus",
-        "x-ms-visibility": "important",
-        "parameters": [
-          {
-            "name": "operation",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "default": "ChangeMondayStatus",
-            "x-ms-visibility": "internal"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ChangeMondayStatusRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "monday.com GraphQL response containing the updated item id.",
-            "schema": {
-              "$ref": "#/definitions/ChangeMondayColumnValueResponse"
-            }
-          },
-          "default": {
-            "description": "monday.com GraphQL error response.",
-            "schema": {
-              "$ref": "#/definitions/MondayGraphQlErrorResponse"
-            }
-          }
-        }
-      }
-    },
-    "/?operation=ChangeMondayColumnValue": {
-      "post": {
-        "summary": "Change monday column value",
-        "description": "Changes any monday.com column value using a raw monday column value JSON string and the change_column_value GraphQL mutation.",
-        "operationId": "ChangeMondayColumnValue",
-        "x-ms-visibility": "important",
-        "parameters": [
-          {
-            "name": "operation",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "default": "ChangeMondayColumnValue",
-            "x-ms-visibility": "internal"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ChangeMondayColumnValueRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "monday.com GraphQL response containing the updated item id.",
-            "schema": {
-              "$ref": "#/definitions/ChangeMondayColumnValueResponse"
-            }
-          },
-          "default": {
-            "description": "monday.com GraphQL error response.",
-            "schema": {
-              "$ref": "#/definitions/MondayGraphQlErrorResponse"
-            }
-          }
-        }
-      }
-    },
-    "/?operation=CreateMondayItem": {
-      "post": {
-        "summary": "Create monday item",
-        "description": "Creates a monday.com item in a board/group with optional column values by calling the create_item GraphQL mutation.",
-        "operationId": "CreateMondayItem",
-        "x-ms-visibility": "important",
-        "parameters": [
-          {
-            "name": "operation",
-            "in": "query",
-            "required": true,
-            "type": "string",
-            "default": "CreateMondayItem",
-            "x-ms-visibility": "internal"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CreateMondayItemRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "monday.com GraphQL response containing the created item.",
-            "schema": {
-              "$ref": "#/definitions/CreateMondayItemResponse"
-            }
-          },
-          "default": {
-            "description": "monday.com GraphQL error response.",
-            "schema": {
-              "$ref": "#/definitions/MondayGraphQlErrorResponse"
+              "$ref": "#/definitions/RunMondayGraphQLResponse"
             }
           }
         }
@@ -240,436 +78,51 @@
     }
   },
   "definitions": {
-    "GetMondayItemDetailsRequest": {
+    "RunMondayGraphQLRequest": {
       "type": "object",
       "required": [
-        "query",
-        "variables"
+        "query"
       ],
       "properties": {
         "query": {
           "type": "string",
-          "title": "GraphQL query",
-          "description": "Prebuilt monday.com GraphQL query for item details. Leave the default value unchanged.",
-          "default": "query GetMondayItemDetails($itemId: [ID!]!) { items(ids: $itemId) { id name board { id name } group { id title } column_values { id text value type } } }",
-          "x-ms-visibility": "internal"
+          "title": "GraphQL query or mutation",
+          "description": "The monday.com GraphQL query or mutation to run."
         },
         "variables": {
           "type": "object",
-          "title": "Inputs",
-          "description": "Friendly inputs for the item details query.",
-          "required": [
-            "itemId"
-          ],
-          "properties": {
-            "itemId": {
-              "type": "string",
-              "title": "Item ID",
-              "description": "The monday.com item ID to retrieve."
-            }
-          }
+          "title": "GraphQL variables",
+          "description": "Optional GraphQL variables object.",
+          "additionalProperties": {}
         }
       },
+      "additionalProperties": false,
       "example": {
-        "query": "query GetMondayItemDetails($itemId: [ID!]!) { items(ids: $itemId) { id name board { id name } group { id title } column_values { id text value type } } }",
+        "query": "query GetMondayItemDetails($itemId: [ID!]!) { items(ids: $itemId) { id name } }",
         "variables": {
           "itemId": "<ITEM_ID>"
         }
       }
     },
-    "CreateMondayItemUpdateRequest": {
+    "RunMondayGraphQLResponse": {
       "type": "object",
-      "required": [
-        "query",
-        "variables"
-      ],
-      "properties": {
-        "query": {
-          "type": "string",
-          "title": "GraphQL mutation",
-          "description": "Prebuilt monday.com GraphQL mutation for creating an item update/comment. Leave the default value unchanged.",
-          "default": "mutation CreateMondayItemUpdate($itemId: ID!, $body: String!) { create_update(item_id: $itemId, body: $body) { id body created_at } }",
-          "x-ms-visibility": "internal"
-        },
-        "variables": {
-          "type": "object",
-          "title": "Inputs",
-          "description": "Friendly inputs for the create update mutation.",
-          "required": [
-            "itemId",
-            "body"
-          ],
-          "properties": {
-            "itemId": {
-              "type": "string",
-              "title": "Item ID",
-              "description": "The monday.com item ID to add the update/comment to."
-            },
-            "body": {
-              "type": "string",
-              "title": "Update body",
-              "description": "The update/comment text to add to the item."
-            }
-          }
-        }
-      }
-    },
-    "ChangeMondayStatusRequest": {
-      "type": "object",
-      "required": [
-        "query",
-        "variables"
-      ],
-      "properties": {
-        "query": {
-          "type": "string",
-          "title": "GraphQL mutation",
-          "description": "Prebuilt monday.com GraphQL mutation for changing a status column. Leave the default value unchanged.",
-          "default": "mutation ChangeMondayStatus($boardId: ID!, $itemId: ID!, $columnId: String!, $statusLabel: String!) { change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: {label: $statusLabel}) { id } }",
-          "x-ms-visibility": "internal"
-        },
-        "variables": {
-          "type": "object",
-          "title": "Inputs",
-          "description": "Friendly inputs for the status change mutation.",
-          "required": [
-            "boardId",
-            "itemId",
-            "columnId",
-            "statusLabel"
-          ],
-          "properties": {
-            "boardId": {
-              "type": "string",
-              "title": "Board ID",
-              "description": "The monday.com board ID that contains the item."
-            },
-            "itemId": {
-              "type": "string",
-              "title": "Item ID",
-              "description": "The monday.com item ID to update."
-            },
-            "columnId": {
-              "type": "string",
-              "title": "Status column ID",
-              "description": "The monday.com status column ID, such as status."
-            },
-            "statusLabel": {
-              "type": "string",
-              "title": "Status label",
-              "description": "The exact status label to apply, such as Done or Working on it."
-            }
-          }
-        }
-      }
-    },
-    "ChangeMondayColumnValueRequest": {
-      "type": "object",
-      "required": [
-        "query",
-        "variables"
-      ],
-      "properties": {
-        "query": {
-          "type": "string",
-          "title": "GraphQL mutation",
-          "description": "Prebuilt monday.com GraphQL mutation for changing a raw column value. Leave the default value unchanged.",
-          "default": "mutation ChangeMondayColumnValue($boardId: ID!, $itemId: ID!, $columnId: String!, $columnValueJson: JSON!) { change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $columnValueJson) { id } }",
-          "x-ms-visibility": "internal"
-        },
-        "variables": {
-          "type": "object",
-          "title": "Inputs",
-          "description": "Friendly inputs for the raw column value mutation.",
-          "required": [
-            "boardId",
-            "itemId",
-            "columnId",
-            "columnValueJson"
-          ],
-          "properties": {
-            "boardId": {
-              "type": "string",
-              "title": "Board ID",
-              "description": "The monday.com board ID that contains the item."
-            },
-            "itemId": {
-              "type": "string",
-              "title": "Item ID",
-              "description": "The monday.com item ID to update."
-            },
-            "columnId": {
-              "type": "string",
-              "title": "Column ID",
-              "description": "The monday.com column ID to update."
-            },
-            "columnValueJson": {
-              "type": "string",
-              "title": "Column value JSON",
-              "description": "A raw monday.com column value JSON string, for example {\"text\":\"Example\"}."
-            }
-          }
-        }
-      }
-    },
-    "CreateMondayItemRequest": {
-      "type": "object",
-      "required": [
-        "query",
-        "variables"
-      ],
-      "properties": {
-        "query": {
-          "type": "string",
-          "title": "GraphQL mutation",
-          "description": "Prebuilt monday.com GraphQL mutation for creating an item. Leave the default value unchanged.",
-          "default": "mutation CreateMondayItem($boardId: ID!, $groupId: String!, $itemName: String!, $columnValuesJson: JSON) { create_item(board_id: $boardId, group_id: $groupId, item_name: $itemName, column_values: $columnValuesJson) { id name board { id } } }",
-          "x-ms-visibility": "internal"
-        },
-        "variables": {
-          "type": "object",
-          "title": "Inputs",
-          "description": "Friendly inputs for the create item mutation.",
-          "required": [
-            "boardId",
-            "groupId",
-            "itemName"
-          ],
-          "properties": {
-            "boardId": {
-              "type": "string",
-              "title": "Board ID",
-              "description": "The monday.com board ID where the item should be created."
-            },
-            "groupId": {
-              "type": "string",
-              "title": "Group ID",
-              "description": "The monday.com group ID where the item should be created."
-            },
-            "itemName": {
-              "type": "string",
-              "title": "Item name",
-              "description": "The name for the new monday.com item."
-            },
-            "columnValuesJson": {
-              "type": "string",
-              "title": "Column values JSON",
-              "description": "Optional raw monday.com column values JSON string, for example {\"status\":{\"label\":\"Working on it\"}}."
-            }
-          }
-        }
-      }
-    },
-    "GetMondayItemDetailsResponse": {
-      "type": "object",
+      "description": "Raw monday.com GraphQL response. Successful GraphQL calls return data; GraphQL validation or execution problems may return errors.",
       "properties": {
         "data": {
           "type": "object",
-          "properties": {
-            "items": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/MondayItem"
-              }
-            }
-          }
+          "description": "Raw monday.com GraphQL data object.",
+          "additionalProperties": {}
         },
         "errors": {
-          "$ref": "#/definitions/MondayGraphQlErrors"
-        }
-      }
-    },
-    "CreateMondayItemUpdateResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "type": "object",
-          "properties": {
-            "create_update": {
-              "$ref": "#/definitions/MondayUpdate"
-            }
-          }
-        },
-        "errors": {
-          "$ref": "#/definitions/MondayGraphQlErrors"
-        }
-      }
-    },
-    "ChangeMondayColumnValueResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "type": "object",
-          "properties": {
-            "change_column_value": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "description": "The updated monday.com item ID."
-                }
-              }
-            }
-          }
-        },
-        "errors": {
-          "$ref": "#/definitions/MondayGraphQlErrors"
-        }
-      }
-    },
-    "CreateMondayItemResponse": {
-      "type": "object",
-      "properties": {
-        "data": {
-          "type": "object",
-          "properties": {
-            "create_item": {
-              "$ref": "#/definitions/MondayCreatedItem"
-            }
-          }
-        },
-        "errors": {
-          "$ref": "#/definitions/MondayGraphQlErrors"
-        }
-      }
-    },
-    "MondayItem": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "board": {
-          "$ref": "#/definitions/MondayBoard"
-        },
-        "group": {
-          "$ref": "#/definitions/MondayGroup"
-        },
-        "column_values": {
           "type": "array",
+          "description": "Raw monday.com GraphQL errors array, when monday.com returns GraphQL errors.",
           "items": {
-            "$ref": "#/definitions/MondayColumnValue"
+            "type": "object",
+            "additionalProperties": {}
           }
         }
-      }
-    },
-    "MondayCreatedItem": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "board": {
-          "$ref": "#/definitions/MondayBoardIdOnly"
-        }
-      }
-    },
-    "MondayBoard": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "MondayBoardIdOnly": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      }
-    },
-    "MondayGroup": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        }
-      }
-    },
-    "MondayColumnValue": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "text": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        }
-      }
-    },
-    "MondayUpdate": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "body": {
-          "type": "string"
-        },
-        "created_at": {
-          "type": "string"
-        }
-      }
-    },
-    "MondayGraphQlErrorResponse": {
-      "type": "object",
-      "properties": {
-        "errors": {
-          "$ref": "#/definitions/MondayGraphQlErrors"
-        },
-        "data": {
-          "type": "object"
-        }
-      }
-    },
-    "MondayGraphQlErrors": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string"
-          },
-          "locations": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            }
-          },
-          "path": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "extensions": {
-            "type": "object"
-          }
-        }
-      }
+      },
+      "additionalProperties": {}
     }
-  },
-  "parameters": {},
-  "responses": {},
-  "tags": []
+  }
 }

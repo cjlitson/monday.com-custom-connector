@@ -1,0 +1,11 @@
+{
+  "query": "mutation ChangeMondayStatus($boardId: ID!, $itemId: ID!, $columnId: String!, $statusValue: JSON!) { change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $statusValue) { id } }",
+  "variables": {
+    "boardId": "<BOARD_ID>",
+    "itemId": "<ITEM_ID>",
+    "columnId": "<STATUS_COLUMN_ID>",
+    "statusValue": {
+      "label": "Done"
+    }
+  }
+}
