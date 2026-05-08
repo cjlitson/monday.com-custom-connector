@@ -930,7 +930,9 @@
               "boardId": {
                 "parameterReference": "body/boardId"
               },
-              "columnType": "status"
+              "columnType": {
+                "value": "status"
+              }
             },
             "itemsPath": "value",
             "itemValuePath": "id",
@@ -1288,7 +1290,9 @@
               "boardId": {
                 "parameterReference": "body/boardId"
               },
-              "columnType": "status"
+              "columnType": {
+                "value": "status"
+              }
             },
             "itemsPath": "value",
             "itemValuePath": "id",
@@ -1368,7 +1372,9 @@
               "boardId": {
                 "parameterReference": "body/boardId"
               },
-              "columnType": "date"
+              "columnType": {
+                "value": "date"
+              }
             },
             "itemsPath": "value",
             "itemValuePath": "id",
@@ -1460,7 +1466,9 @@
               "boardId": {
                 "parameterReference": "body/boardId"
               },
-              "columnType": "text"
+              "columnType": {
+                "value": "text"
+              }
             },
             "itemsPath": "value",
             "itemValuePath": "id",
@@ -1545,7 +1553,9 @@
               "boardId": {
                 "parameterReference": "body/boardId"
               },
-              "columnType": "numbers"
+              "columnType": {
+                "value": "numbers"
+              }
             },
             "itemsPath": "value",
             "itemValuePath": "id",
