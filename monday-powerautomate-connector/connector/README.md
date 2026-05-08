@@ -4,28 +4,39 @@ This folder contains the primary Power Platform custom connector definition for 
 
 ## Files
 
-- `apiDefinition.swagger.json` - primary Swagger/OpenAPI 2.0 definition with friendly, unique public action paths.
-- `apiProperties.json` - Power Platform connection metadata, publisher metadata, and `scriptOperations` bindings.
-- `script.csx` - Power Platform custom connector C# script that converts friendly action inputs to monday.com GraphQL requests.
+- `apiDefinition.swagger.json` - primary Swagger/OpenAPI 2.0 definition with friendly, unique public action paths and dynamic dropdown metadata.
+- `apiProperties.json` - Power Platform connection metadata, publisher metadata, and `scriptOperations` bindings for every custom-code action.
+- `script.csx` - Power Platform custom connector C# script that converts friendly action inputs to monday.com GraphQL requests and rewrites calls to `https://api.monday.com/v2`.
 - `experimental/apiDefinition.multi-action.experimental.swagger.json` - deprecated `x-ms-paths` multi-action reference; do not use for primary import.
 - `experimental/apiDefinition.single-action.graphql.swagger.json` - previous working single generic GraphQL fallback/reference.
 
 ## Endpoint and authentication
 
-- Public connector actions use distinct paths such as `/get-item-details` and `/create-item`.
+- Public connector actions use distinct paths such as `/get-item-details`, `/list-boards`, `/change-date-column`, and `/create-subitem`.
 - `script.csx` rewrites each supported action to `POST https://api.monday.com/v2`.
 - Authentication remains the monday.com API token supplied by the connector connection in the `Authorization` header.
 - No token, board ID, item ID, or organization-specific secret is stored in these files.
 
-## Friendly actions
+## Action groups
 
-| Action | Operation ID | Purpose |
-| --- | --- | --- |
-| Get monday item details | `GetMondayItemDetails` | Returns item id, name, board, group, and column values. |
-| Create monday item update/comment | `CreateMondayItemUpdate` | Creates an update/comment on a monday item. |
-| Change monday status column | `ChangeMondayStatus` | Changes a status column by friendly label; blank `columnId` defaults to `status`. |
-| Change monday column value | `ChangeMondayColumnValue` | Changes any column using a monday-compatible JSON string. |
-| Create monday item | `CreateMondayItem` | Creates an item with optional group and column values JSON. |
+| Group | Operations |
+| --- | --- |
+| Preserved item actions | `GetMondayItemDetails`, `CreateMondayItemUpdate`, `ChangeMondayStatus`, `ChangeMondayColumnValue`, `CreateMondayItem` |
+| Dropdown metadata actions | `ListMondayWorkspaces`, `ListMondayBoards`, `ListMondayBoardGroups`, `ListMondayBoardColumns`, `ListMondayBoardItems`, `ListMondayStatusLabels` |
+| Typed column updates | `ChangeMondayDateColumn`, `ChangeMondayTextColumn`, `ChangeMondayNumberColumn` |
+| Subitem actions | `CreateMondaySubitem`, `GetMondaySubitems`, `GetMondaySubitemDetails`, `ChangeMondaySubitemColumnValue` |
+
+## Dynamic dropdowns
+
+The Swagger uses `x-ms-dynamic-values` and companion `x-ms-dynamic-list` metadata on board, group, item, column, and status label fields. The metadata actions return a `value` array suitable for Power Platform dropdown binding while preserving the raw monday GraphQL response under `raw` for troubleshooting.
+
+## Subitems
+
+Subitems are treated as monday items for detail and update operations. When changing subitem column values, classic boards may require the hidden subitems board ID; multi-level boards generally use the main board ID.
+
+## Webhooks/triggers
+
+Native webhook triggers are intentionally not implemented in the primary connector yet. monday.com webhook setup requires challenge-response verification, and the existing Power Automate HTTP router already handles that challenge flow. Keep using the router for webhook events and call these actions from router/downstream flows.
 
 ## Import notes
 

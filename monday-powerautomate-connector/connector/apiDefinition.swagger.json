@@ -249,6 +249,578 @@
           }
         }
       }
+    },
+    "/list-workspaces": {
+      "post": {
+        "summary": "List monday workspaces",
+        "description": "Returns monday.com workspaces as array-friendly id/name objects for dropdowns.",
+        "operationId": "ListMondayWorkspaces",
+        "x-ms-visibility": "internal",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ListMondayWorkspacesRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns monday.com workspaces as array-friendly id/name objects for dropdowns.",
+            "schema": {
+              "$ref": "#/definitions/MondayDropdownListResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/list-boards": {
+      "post": {
+        "summary": "List monday boards",
+        "description": "Returns monday.com boards for dropdowns, optionally filtered by workspace ID.",
+        "operationId": "ListMondayBoards",
+        "x-ms-visibility": "internal",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ListMondayBoardsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns monday.com boards for dropdowns, optionally filtered by workspace ID.",
+            "schema": {
+              "$ref": "#/definitions/MondayDropdownListResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/list-board-groups": {
+      "post": {
+        "summary": "List monday board groups",
+        "description": "Returns groups for a selected monday.com board for dropdowns.",
+        "operationId": "ListMondayBoardGroups",
+        "x-ms-visibility": "internal",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ListMondayBoardGroupsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns groups for a selected monday.com board for dropdowns.",
+            "schema": {
+              "$ref": "#/definitions/MondayDropdownListResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/list-board-columns": {
+      "post": {
+        "summary": "List monday board columns",
+        "description": "Returns columns for a selected monday.com board. This action is visible for troubleshooting dropdown configuration and column IDs.",
+        "operationId": "ListMondayBoardColumns",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ListMondayBoardColumnsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns columns for a selected monday.com board. This action is visible for troubleshooting dropdown configuration and column IDs.",
+            "schema": {
+              "$ref": "#/definitions/MondayDropdownListResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/list-board-items": {
+      "post": {
+        "summary": "List monday board items",
+        "description": "Returns items for a selected monday.com board for dropdowns. Uses items_page and includes cursor when monday.com returns one.",
+        "operationId": "ListMondayBoardItems",
+        "x-ms-visibility": "internal",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ListMondayBoardItemsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns items for a selected monday.com board for dropdowns. Uses items_page and includes cursor when monday.com returns one.",
+            "schema": {
+              "$ref": "#/definitions/MondayDropdownListResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/list-status-labels": {
+      "post": {
+        "summary": "List monday status labels",
+        "description": "Returns configured labels for a selected status column by parsing the column settings_str returned by monday.com.",
+        "operationId": "ListMondayStatusLabels",
+        "x-ms-visibility": "internal",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ListMondayStatusLabelsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns configured labels for a selected status column by parsing the column settings_str returned by monday.com.",
+            "schema": {
+              "$ref": "#/definitions/MondayDropdownListResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/change-date-column": {
+      "post": {
+        "summary": "Change monday date column",
+        "description": "Friendly action that builds the monday.com date JSON value from Date and optional Time inputs, then calls change_column_value.",
+        "operationId": "ChangeMondayDateColumn",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ChangeMondayDateColumnRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friendly action that builds the monday.com date JSON value from Date and optional Time inputs, then calls change_column_value.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/change-text-column": {
+      "post": {
+        "summary": "Change monday text column",
+        "description": "Friendly action that updates a monday.com text column without requiring makers to write JSON.",
+        "operationId": "ChangeMondayTextColumn",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ChangeMondayTextColumnRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friendly action that updates a monday.com text column without requiring makers to write JSON.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/change-number-column": {
+      "post": {
+        "summary": "Change monday number column",
+        "description": "Friendly action that updates a monday.com number column without requiring makers to write JSON.",
+        "operationId": "ChangeMondayNumberColumn",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ChangeMondayNumberColumnRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friendly action that updates a monday.com number column without requiring makers to write JSON.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/create-subitem": {
+      "post": {
+        "summary": "Create monday subitem",
+        "description": "Creates a subitem under a monday.com parent item. Optional columnValues is a monday-compatible JSON string.",
+        "operationId": "CreateMondaySubitem",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateMondaySubitemRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Creates a subitem under a monday.com parent item. Optional columnValues is a monday-compatible JSON string.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/get-subitems": {
+      "post": {
+        "summary": "Get monday subitems",
+        "description": "Returns subitems for a monday.com parent item, including parent, board, and column values when available.",
+        "operationId": "GetMondaySubitems",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetMondaySubitemsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns subitems for a monday.com parent item, including parent, board, and column values when available.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/get-subitem-details": {
+      "post": {
+        "summary": "Get monday subitem details",
+        "description": "Returns details for a monday.com subitem. Subitems are monday.com items and use the item details query pattern.",
+        "operationId": "GetMondaySubitemDetails",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetMondaySubitemDetailsRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns details for a monday.com subitem. Subitems are monday.com items and use the item details query pattern.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/change-subitem-column-value": {
+      "post": {
+        "summary": "Change monday subitem column value",
+        "description": "Changes any monday.com subitem column value using a monday-compatible JSON string. Classic boards may require the hidden subitems board ID; multi-level boards use the main board ID.",
+        "operationId": "ChangeMondaySubitemColumnValue",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ChangeMondaySubitemColumnValueRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Changes any monday.com subitem column value using a monday-compatible JSON string. Classic boards may require the hidden subitems board ID; multi-level boards use the main board ID.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -300,23 +872,103 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID containing the item.",
-          "x-ms-summary": "Board ID"
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
         },
         "itemId": {
           "type": "string",
           "description": "The monday.com item ID to update.",
-          "x-ms-summary": "Item ID"
+          "x-ms-summary": "Item ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardItems",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardItems",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
         },
         "columnId": {
           "type": "string",
           "description": "The status column ID. Leave blank to use status.",
           "x-ms-summary": "Status column ID",
-          "default": "status"
+          "default": "status",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardColumns",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnType": "status"
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardColumns",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnType": "status"
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
         },
         "label": {
           "type": "string",
           "description": "The status label to set, such as Done or Working on it.",
-          "x-ms-summary": "Status label"
+          "x-ms-summary": "Status label",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayStatusLabels",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "title",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnId": {
+                "parameterReference": "body/columnId"
+              }
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayStatusLabels",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnId": {
+                "parameterReference": "body/columnId"
+              }
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "title"
+          }
         }
       },
       "additionalProperties": false
@@ -334,17 +986,67 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID containing the item.",
-          "x-ms-summary": "Board ID"
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
         },
         "itemId": {
           "type": "string",
           "description": "The monday.com item ID to update.",
-          "x-ms-summary": "Item ID"
+          "x-ms-summary": "Item ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardItems",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardItems",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
         },
         "columnId": {
           "type": "string",
           "description": "The column ID to update.",
-          "x-ms-summary": "Column ID"
+          "x-ms-summary": "Column ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardColumns",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardColumns",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
         },
         "value": {
           "type": "string",
@@ -365,7 +1067,13 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID where the item should be created.",
-          "x-ms-summary": "Board ID"
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
         },
         "itemName": {
           "type": "string",
@@ -375,7 +1083,29 @@
         "groupId": {
           "type": "string",
           "description": "Optional monday.com group ID where the item should be created.",
-          "x-ms-summary": "Group ID"
+          "x-ms-summary": "Group ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardGroups",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardGroups",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
         },
         "columnValues": {
           "type": "string",
@@ -419,6 +1149,558 @@
         }
       },
       "additionalProperties": false
+    },
+    "ListMondayWorkspacesRequest": {
+      "type": "object",
+      "description": "Input for listing monday.com workspaces for dropdowns.",
+      "required": [],
+      "properties": {},
+      "additionalProperties": false
+    },
+    "ListMondayBoardsRequest": {
+      "type": "object",
+      "description": "Input for listing monday.com boards for dropdowns.",
+      "required": [],
+      "properties": {
+        "workspaceId": {
+          "type": "string",
+          "description": "Optional workspace ID used to filter the returned boards.",
+          "x-ms-summary": "Workspace ID"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ListMondayBoardGroupsRequest": {
+      "type": "object",
+      "description": "Input for listing groups on a monday.com board.",
+      "required": [
+        "boardId"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The monday.com board ID whose groups should be listed.",
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ListMondayBoardColumnsRequest": {
+      "type": "object",
+      "description": "Input for listing columns on a monday.com board.",
+      "required": [
+        "boardId"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The monday.com board ID whose columns should be listed.",
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
+        },
+        "columnType": {
+          "type": "string",
+          "description": "Optional monday.com column type filter such as status, date, text, numbers, or subitems.",
+          "x-ms-summary": "Column type"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ListMondayBoardItemsRequest": {
+      "type": "object",
+      "description": "Input for listing items on a monday.com board.",
+      "required": [
+        "boardId"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The monday.com board ID whose items should be listed.",
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Maximum number of items to return. Defaults to 100; maximum is 500.",
+          "x-ms-summary": "Limit",
+          "default": 100,
+          "minimum": 1,
+          "maximum": 500
+        }
+      },
+      "additionalProperties": false
+    },
+    "ListMondayStatusLabelsRequest": {
+      "type": "object",
+      "description": "Input for listing labels configured on a monday.com status column.",
+      "required": [
+        "boardId",
+        "columnId"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The monday.com board ID containing the status column.",
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
+        },
+        "columnId": {
+          "type": "string",
+          "description": "The status column ID whose labels should be listed.",
+          "x-ms-summary": "Status column ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardColumns",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnType": "status"
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardColumns",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnType": "status"
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChangeMondayDateColumnRequest": {
+      "type": "object",
+      "description": "Input for the friendly typed date column update action.",
+      "required": [
+        "boardId",
+        "itemId",
+        "columnId",
+        "date"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The monday.com board ID containing the item.",
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
+        },
+        "itemId": {
+          "type": "string",
+          "description": "The monday.com item ID to update.",
+          "x-ms-summary": "Item ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardItems",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardItems",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
+        },
+        "columnId": {
+          "type": "string",
+          "description": "The date column ID to update. You can pick from the dropdown or enter an ID manually.",
+          "x-ms-summary": "Column ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardColumns",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnType": "date"
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardColumns",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnType": "date"
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
+        },
+        "date": {
+          "type": "string",
+          "description": "Date to set in yyyy-MM-dd format.",
+          "x-ms-summary": "Date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "time": {
+          "type": "string",
+          "description": "Optional time to set in HH:mm format.",
+          "x-ms-summary": "Time",
+          "pattern": "^\\d{2}:\\d{2}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChangeMondayTextColumnRequest": {
+      "type": "object",
+      "description": "Input for the friendly typed text column update action.",
+      "required": [
+        "boardId",
+        "itemId",
+        "columnId",
+        "text"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The monday.com board ID containing the item.",
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
+        },
+        "itemId": {
+          "type": "string",
+          "description": "The monday.com item ID to update.",
+          "x-ms-summary": "Item ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardItems",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardItems",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
+        },
+        "columnId": {
+          "type": "string",
+          "description": "The text column ID to update. You can pick from the dropdown or enter an ID manually.",
+          "x-ms-summary": "Column ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardColumns",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnType": "text"
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardColumns",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnType": "text"
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
+        },
+        "text": {
+          "type": "string",
+          "description": "Text value to set in the selected text column.",
+          "x-ms-summary": "Text"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChangeMondayNumberColumnRequest": {
+      "type": "object",
+      "description": "Input for the friendly typed number column update action.",
+      "required": [
+        "boardId",
+        "itemId",
+        "columnId",
+        "number"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The monday.com board ID containing the item.",
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
+        },
+        "itemId": {
+          "type": "string",
+          "description": "The monday.com item ID to update.",
+          "x-ms-summary": "Item ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardItems",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardItems",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
+        },
+        "columnId": {
+          "type": "string",
+          "description": "The number column ID to update. You can pick from the dropdown or enter an ID manually.",
+          "x-ms-summary": "Column ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardColumns",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnType": "numbers"
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardColumns",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              },
+              "columnType": "numbers"
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
+        },
+        "number": {
+          "type": "number",
+          "format": "double",
+          "description": "Numeric value to set in the selected number column.",
+          "x-ms-summary": "Number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CreateMondaySubitemRequest": {
+      "type": "object",
+      "description": "Input for creating a monday.com subitem.",
+      "required": [
+        "parentItemId",
+        "itemName"
+      ],
+      "properties": {
+        "parentItemId": {
+          "type": "string",
+          "description": "The parent monday.com item ID that should receive the new subitem.",
+          "x-ms-summary": "Parent item ID"
+        },
+        "itemName": {
+          "type": "string",
+          "description": "The name of the new subitem.",
+          "x-ms-summary": "Subitem name"
+        },
+        "columnValues": {
+          "type": "string",
+          "description": "Optional monday-compatible JSON string for initial subitem column values.",
+          "x-ms-summary": "Column values JSON"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GetMondaySubitemsRequest": {
+      "type": "object",
+      "description": "Input for retrieving subitems for a monday.com item.",
+      "required": [
+        "parentItemId"
+      ],
+      "properties": {
+        "parentItemId": {
+          "type": "string",
+          "description": "The parent monday.com item ID whose subitems should be returned.",
+          "x-ms-summary": "Parent item ID"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GetMondaySubitemDetailsRequest": {
+      "type": "object",
+      "description": "Input for retrieving details for a monday.com subitem.",
+      "required": [
+        "subitemId"
+      ],
+      "properties": {
+        "subitemId": {
+          "type": "string",
+          "description": "The monday.com subitem ID to retrieve. Subitems are monday items too.",
+          "x-ms-summary": "Subitem ID"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChangeMondaySubitemColumnValueRequest": {
+      "type": "object",
+      "description": "Input for changing a subitem column value.",
+      "required": [
+        "boardId",
+        "subitemId",
+        "columnId",
+        "value"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The board ID to use for the subitem column update. Classic boards may require the hidden subitems board ID; multi-level boards use the main board ID.",
+          "x-ms-summary": "Board ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoards",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name"
+          }
+        },
+        "subitemId": {
+          "type": "string",
+          "description": "The monday.com subitem ID to update.",
+          "x-ms-summary": "Subitem ID"
+        },
+        "columnId": {
+          "type": "string",
+          "description": "The subitem column ID to update.",
+          "x-ms-summary": "Column ID",
+          "x-ms-dynamic-values": {
+            "operationId": "ListMondayBoardColumns",
+            "value-collection": "value",
+            "value-path": "id",
+            "value-title": "name",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            }
+          },
+          "x-ms-dynamic-list": {
+            "operationId": "ListMondayBoardColumns",
+            "parameters": {
+              "boardId": {
+                "parameterReference": "body/boardId"
+              }
+            },
+            "itemsPath": "value",
+            "itemValuePath": "id",
+            "itemTitlePath": "name"
+          }
+        },
+        "value": {
+          "type": "string",
+          "description": "A monday-compatible JSON string for the subitem column value, for example {\"text\":\"Example\"}.",
+          "x-ms-summary": "Column value JSON"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MondayDropdownListResponse": {
+      "type": "object",
+      "description": "Array-friendly dropdown response returned by connector custom code for metadata actions.",
+      "properties": {
+        "value": {
+          "type": "array",
+          "description": "Objects suitable for Power Platform dynamic dropdowns.",
+          "items": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "cursor": {
+          "type": "string",
+          "description": "monday.com pagination cursor when available."
+        },
+        "raw": {
+          "type": "object",
+          "description": "Raw monday.com GraphQL response.",
+          "additionalProperties": {}
+        }
+      },
+      "additionalProperties": {}
     }
   }
 }

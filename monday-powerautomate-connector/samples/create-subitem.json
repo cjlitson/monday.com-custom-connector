@@ -1,0 +1,5 @@
+{
+  "parentItemId": "<PARENT_ITEM_ID>",
+  "itemName": "New subitem from Power Automate",
+  "columnValues": "{\"status\":{\"label\":\"Working on it\"}}"
+}
