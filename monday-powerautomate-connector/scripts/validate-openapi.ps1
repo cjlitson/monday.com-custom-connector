@@ -151,6 +151,85 @@ if ($missingDynamicTargets) {
     exit 1
 }
 
+
+function Get-DynamicListParameterValidationErrors {
+    param(
+        [object]$Node,
+        [string]$Path = "root"
+    )
+
+    $errors = New-Object System.Collections.Generic.List[string]
+    if ($null -eq $Node) { return $errors }
+
+    if ($Node -is [System.Array]) {
+        for ($i = 0; $i -lt $Node.Count; $i++) {
+            $errors.AddRange((Get-DynamicListParameterValidationErrors -Node $Node[$i] -Path "$Path[$i]"))
+        }
+        return $errors
+    }
+
+    if ($Node -isnot [pscustomobject]) { return $errors }
+
+    foreach ($prop in $Node.PSObject.Properties) {
+        if ($prop.Name -eq "x-ms-dynamic-list") {
+            $dynamicList = $prop.Value
+            $dynamicListPath = "$Path/x-ms-dynamic-list"
+            if ($null -ne $dynamicList -and $dynamicList -is [pscustomobject]) {
+                $parametersProperty = $dynamicList.PSObject.Properties["parameters"]
+                if ($null -ne $parametersProperty -and $null -ne $parametersProperty.Value) {
+                    $parameters = $parametersProperty.Value
+                    if ($parameters -isnot [pscustomobject]) {
+                        $errors.Add("$dynamicListPath/parameters must be an object when present.")
+                    }
+                    else {
+                        foreach ($parameter in $parameters.PSObject.Properties) {
+                            $parameterPath = "$dynamicListPath/parameters/$($parameter.Name)"
+                            $parameterValue = $parameter.Value
+                            if ($parameterValue -isnot [pscustomobject]) {
+                                $actualType = if ($null -eq $parameterValue) { "Null" } else { $parameterValue.GetType().Name }
+                                $errors.Add("$parameterPath must be an object with either a value or parameterReference property, but found $actualType.")
+                                continue
+                            }
+
+                            $hasValue = $null -ne $parameterValue.PSObject.Properties["value"]
+                            $hasParameterReference = $null -ne $parameterValue.PSObject.Properties["parameterReference"]
+                            if ($hasValue -eq $hasParameterReference) {
+                                $errors.Add("$parameterPath must contain exactly one of value or parameterReference.")
+                                continue
+                            }
+
+                            if ($hasValue) {
+                                $staticValue = $parameterValue.PSObject.Properties["value"].Value
+                                if ($null -eq $staticValue -or $staticValue -is [pscustomobject] -or $staticValue -is [System.Array]) {
+                                    $actualType = if ($null -eq $staticValue) { "Null" } else { $staticValue.GetType().Name }
+                                    $errors.Add("$parameterPath/value must be a scalar static value, but found $actualType.")
+                                }
+                            }
+
+                            if ($hasParameterReference) {
+                                $referenceValue = $parameterValue.PSObject.Properties["parameterReference"].Value
+                                if ($referenceValue -isnot [string] -or [string]::IsNullOrWhiteSpace($referenceValue)) {
+                                    $errors.Add("$parameterPath/parameterReference must be a non-empty string.")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $errors.AddRange((Get-DynamicListParameterValidationErrors -Node $prop.Value -Path "$Path/$($prop.Name)"))
+    }
+
+    return $errors
+}
+
+$dynamicListParameterErrors = Get-DynamicListParameterValidationErrors -Node $swagger
+if ($dynamicListParameterErrors) {
+    Write-Error "Invalid x-ms-dynamic-list parameter mappings found: $($dynamicListParameterErrors -join '; ')"
+    exit 1
+}
+
 $secretPatterns = @(
     'monday[_-]?api[_-]?token\s*[:=]\s*[A-Za-z0-9_\-]{20,}',
     'Authorization\s*[:=]\s*Bearer\s+[A-Za-z0-9_\-\.]{20,}',
@@ -168,4 +247,4 @@ foreach ($file in $filesToScan) {
     }
 }
 
-Write-Host "OpenAPI and apiProperties JSON are valid. Swagger 2.0 is preserved, x-ms-paths is absent, operationIds and POST paths are unique, scriptOperations cover every scripted action, dynamic dropdown references resolve, and no token/secret patterns were found."
+Write-Host "OpenAPI and apiProperties JSON are valid. Swagger 2.0 is preserved, x-ms-paths is absent, operationIds and POST paths are unique, scriptOperations cover every scripted action, dynamic dropdown references resolve, x-ms-dynamic-list parameters are object mappings, and no token/secret patterns were found."
