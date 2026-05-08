@@ -1,17 +1,23 @@
-# LV monday.com Actions - Power Automate custom connector
+# LV monday.com GraphQL - Power Automate custom connector
 
-This repository contains a GitHub-ready Power Platform custom connector project for monday.com. The connector wraps common monday.com GraphQL API actions so Power Automate flow makers can call monday.com without manually creating generic HTTP actions or hand-building GraphQL payloads for every flow.
+This repository contains a GitHub-ready Power Platform custom connector project for monday.com.
+
+Version 1 is intentionally a **single-action** connector. monday.com exposes GraphQL through one endpoint, `https://api.monday.com/v2`, and Power Automate custom connector import treats actions with the same HTTP method/path signature as duplicates. To avoid the duplicate signature import error, the primary connector imports one reliable generic GraphQL action instead of several `POST /` actions.
 
 ## What this connector does
 
-**LV monday.com Actions** is a direct Power Automate custom connector for monday.com actions.
+**LV monday.com GraphQL** is a direct Power Automate custom connector for monday.com GraphQL requests.
 
 - It calls monday.com directly at `https://api.monday.com/v2`.
 - It uses Swagger/OpenAPI 2.0 for Power Platform import compatibility.
+- It exposes exactly one action: **Run monday GraphQL request** (`RunMondayGraphQL`).
 - It uses the monday.com API token entered when a connector connection is created.
 - It does **not** hard-code or store API tokens in the repository.
 - It does **not** require Azure Functions, Azure App Service, Logic Apps middleware, or any Azure-hosted deployment.
+- It does **not** use `x-ms-paths` in the primary import file.
 - It is for monday.com **actions only**. It is not a webhook receiver and does not replace your existing webhook intake flow.
+
+Friendly, separate actions can be added later with Azure middleware, custom connector code, or child flows. Those options can translate maker-friendly inputs into GraphQL payloads while keeping the imported connector free of duplicate `POST /` signatures.
 
 Your existing Power Automate HTTP webhook router should continue receiving monday.com webhooks. This connector is intended to be called from that router or downstream flows after a monday webhook has already been received.
 
@@ -22,32 +28,34 @@ monday-powerautomate-connector/
 ├── connector/
 │   ├── apiDefinition.swagger.json
 │   ├── apiProperties.json
-│   └── README.md
+│   ├── README.md
+│   └── experimental/
+│       └── apiDefinition.multi-action.experimental.swagger.json
 ├── docs/
 │   ├── webhook-router-design.md
 │   ├── webhook-url-generator.md
 │   └── route-configuration-table.md
 ├── samples/
-│   ├── get-item-details-request.json
-│   ├── create-update-request.json
-│   ├── change-status-request.json
-│   ├── change-column-value-request.json
-│   └── create-item-request.json
+│   ├── run-graphql-get-item-details.json
+│   ├── run-graphql-create-update.json
+│   ├── run-graphql-change-status.json
+│   ├── run-graphql-change-column-value.json
+│   └── run-graphql-create-item.json
 ├── scripts/
 │   ├── validate-openapi.ps1
 │   └── test-monday-api.ps1
 └── README.md
 ```
 
-## Connector actions
+## Connector action
 
-| Maker action | Operation ID | Inputs | monday.com GraphQL operation |
+| Maker action | Operation ID | Inputs | Response |
 | --- | --- | --- | --- |
-| Get monday item details | `GetMondayItemDetails` | `itemId` | Returns item id, item name, board id/name, group id/title, and `column_values` id/text/value/type. |
-| Create monday item update/comment | `CreateMondayItemUpdate` | `itemId`, `body` | Calls `create_update(item_id, body)`. |
-| Change monday status column | `ChangeMondayStatus` | `boardId`, `itemId`, `columnId`, `statusLabel` | Calls `change_column_value` with a monday status label value. |
-| Change monday column value | `ChangeMondayColumnValue` | `boardId`, `itemId`, `columnId`, `columnValueJson` | Calls `change_column_value` using a raw JSON value string. |
-| Create monday item | `CreateMondayItem` | `boardId`, `groupId`, `itemName`, `columnValuesJson` | Calls `create_item(board_id, group_id, item_name, column_values)`. |
+| Run monday GraphQL request | `RunMondayGraphQL` | `query` string, optional `variables` object | Raw monday.com GraphQL response with `data` and optional `errors`. |
+
+### Authentication
+
+The connector uses API key authentication with the header name `Authorization`. The user or admin enters the monday.com API token when creating the connector connection. Do not paste real API tokens into any file in this repository.
 
 ## Setup in Power Automate
 
@@ -59,7 +67,96 @@ monday-powerautomate-connector/
 6. Configure and test the connector.
 7. Create a connector connection and enter the monday.com API token when prompted.
 
-Do not paste real API tokens into any file in this repository. The token belongs only in the Power Platform connector connection.
+## RunMondayGraphQL examples
+
+Use **Run monday GraphQL request** for every monday.com query or mutation. Put the GraphQL operation in `query` and pass dynamic values in `variables`.
+
+### 1. Get item details
+
+Sample file: `samples/run-graphql-get-item-details.json`
+
+```json
+{
+  "query": "query GetMondayItemDetails($itemId: [ID!]!) { items(ids: $itemId) { id name board { id name } group { id title } column_values { id text value type } } }",
+  "variables": {
+    "itemId": "<ITEM_ID>"
+  }
+}
+```
+
+### 2. Create item update/comment
+
+Sample file: `samples/run-graphql-create-update.json`
+
+```json
+{
+  "query": "mutation CreateMondayItemUpdate($itemId: ID!, $body: String!) { create_update(item_id: $itemId, body: $body) { id body created_at } }",
+  "variables": {
+    "itemId": "<ITEM_ID>",
+    "body": "Email was sent to the requester."
+  }
+}
+```
+
+### 3. Change status column
+
+Sample file: `samples/run-graphql-change-status.json`
+
+```json
+{
+  "query": "mutation ChangeMondayStatus($boardId: ID!, $itemId: ID!, $columnId: String!, $statusValue: JSON!) { change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $statusValue) { id } }",
+  "variables": {
+    "boardId": "<BOARD_ID>",
+    "itemId": "<ITEM_ID>",
+    "columnId": "<STATUS_COLUMN_ID>",
+    "statusValue": {
+      "label": "Done"
+    }
+  }
+}
+```
+
+### 4. Change raw column value
+
+Sample file: `samples/run-graphql-change-column-value.json`
+
+```json
+{
+  "query": "mutation ChangeMondayColumnValue($boardId: ID!, $itemId: ID!, $columnId: String!, $columnValue: JSON!) { change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $columnValue) { id } }",
+  "variables": {
+    "boardId": "<BOARD_ID>",
+    "itemId": "<ITEM_ID>",
+    "columnId": "<COLUMN_ID>",
+    "columnValue": {
+      "text": "Example value"
+    }
+  }
+}
+```
+
+### 5. Create item
+
+Sample file: `samples/run-graphql-create-item.json`
+
+```json
+{
+  "query": "mutation CreateMondayItem($boardId: ID!, $groupId: String!, $itemName: String!, $columnValues: JSON) { create_item(board_id: $boardId, group_id: $groupId, item_name: $itemName, column_values: $columnValues) { id name board { id } } }",
+  "variables": {
+    "boardId": "<BOARD_ID>",
+    "groupId": "<GROUP_ID>",
+    "itemName": "New item from Power Automate",
+    "columnValues": {
+      "status": {
+        "label": "Working on it"
+      }
+    }
+  }
+}
+```
+
+## Experimental multi-action file
+
+The previous multi-action Swagger definition has been moved to `connector/experimental/apiDefinition.multi-action.experimental.swagger.json`. It is retained for reference only because Power Automate can reject multiple GraphQL actions that all resolve to the same `POST /?operation={operation}` signature. Do not use the experimental file as the primary import file.
 
 ## Using this connector with the existing webhook router
 
@@ -68,7 +165,7 @@ Keep the current webhook architecture:
 ```text
 monday webhook receives event
   → existing Power Automate HTTP webhook router extracts the monday item ID
-  → router or child flow calls Get monday item details
+  → router or child flow calls Run monday GraphQL request
   → flow reads item name, board, group, and column values
   → flow sends email, creates an update, changes status, or updates another column
 ```
@@ -77,10 +174,9 @@ Example flow pattern:
 
 1. The existing Power Automate HTTP trigger receives a monday webhook event.
 2. The router gets the item ID from the webhook payload.
-3. The router calls **Get monday item details** (`GetMondayItemDetails`).
+3. The router calls **Run monday GraphQL request** (`RunMondayGraphQL`) with the get item details query.
 4. The flow uses the returned item name and column values to compose an email.
-5. After the email sends, the flow calls **Create monday item update/comment** or **Change monday status column**.
-
+5. After the email sends, the flow calls **Run monday GraphQL request** again with a create update or change column mutation.
 
 ## Reusable monday webhook pattern
 
@@ -105,7 +201,7 @@ In this pattern:
 - The monday webhook template sends events to the existing Power Automate HTTP webhook router.
 - The router handles monday challenge validation by returning the received `challenge` value.
 - The router reads the `route` query string value and looks up the matching route configuration.
-- The router calls **LV monday.com Actions** after the webhook is received when it needs current item details or needs to update monday.
+- The router calls **LV monday.com GraphQL** after the webhook is received when it needs current item details or needs to update monday.
 - Users paste generated URLs into monday webhook automation templates instead of editing the router flow for each new automation.
 
 More details are in:
@@ -116,11 +212,10 @@ More details are in:
 
 ### Triggers vs actions
 
-- The custom connector actions call monday.com.
+- The custom connector action calls monday.com.
 - The HTTP webhook router receives monday.com events.
-- True custom connector webhook triggers are possible in Power Platform, but they are not recommended in this phase because monday challenge validation and webhook lifecycle handling are more complex without middleware.
-
-This project does not replace the existing HTTP webhook router with a true custom connector trigger yet.
+- True custom connector webhook triggers are possible in Power Platform, but they are not recommended in this phase because monday webhook validation and route management are already handled by the existing HTTP router.
+- Keep webhook receiving in the router unless there is a separate project to build and validate a connector trigger later.
 
 ### Router expressions
 
@@ -160,24 +255,25 @@ Contact {{SupportOwnerOrTeam}} with the route name, board name, test item ID, an
 - Add an admin Power App for generating URLs.
 - Add a logging table for every webhook received.
 - Add true connector webhook trigger feasibility later.
+- Add friendly monday actions using Azure middleware, custom connector code, or child flows if makers need guided inputs.
 
 ## Implementation plan
 
-### Phase 1: Import connector and test Get item details
+### Phase 1: Import connector and test RunMondayGraphQL
 
-Import `connector/apiDefinition.swagger.json`, create a connection with a monday.com API token, and test `GetMondayItemDetails` against a non-production sample item.
+Import `connector/apiDefinition.swagger.json`, create a connection with a monday.com API token, and test `RunMondayGraphQL` against a non-production sample item.
 
 ### Phase 2: Add connector action into existing monday webhook router flow
 
 Add the imported connector action to the existing Power Automate HTTP webhook router flow after the webhook payload has been parsed.
 
-### Phase 3: Use Get item details before sending emails
+### Phase 3: Use item details before sending emails
 
-Use `GetMondayItemDetails` to fetch the current item name, board, group, and columns before building email subject/body content.
+Use `RunMondayGraphQL` with the get item details query to fetch the current item name, board, group, and columns before building email subject/body content.
 
-### Phase 4: Add update/status actions after email is sent
+### Phase 4: Add update/status mutations after email is sent
 
-After the email action succeeds, call `CreateMondayItemUpdate`, `ChangeMondayStatus`, or `ChangeMondayColumnValue` to record the outcome back to monday.com.
+After the email action succeeds, call `RunMondayGraphQL` with a create update, change status, or change column value mutation to record the outcome back to monday.com.
 
 ## Local validation
 
@@ -215,10 +311,10 @@ Symptoms include an empty `items` array or permission-related errors.
 
 Symptoms include GraphQL validation errors or monday errors when changing column values.
 
-- Confirm `columnValueJson` and `columnValuesJson` are valid JSON strings.
-- Escape quotes if entering JSON inside another JSON body.
+- Confirm `columnValue` and `columnValues` are valid JSON objects for the target monday.com column types.
+- If you choose to pass JSON strings instead, escape quotes when entering JSON inside another JSON body.
 - Match the JSON shape required by the monday.com column type.
-- For status updates, prefer `ChangeMondayStatus` and pass the label instead of raw JSON.
+- For status updates, pass a value such as `{ "label": "Done" }` for the status column.
 
 ### monday.com API rate limits
 
@@ -236,8 +332,8 @@ Symptoms include Power Automate refusing to import the connector or hiding actio
 - Confirm `connector/apiDefinition.swagger.json` is valid JSON.
 - Confirm the file uses `"swagger": "2.0"`, not OpenAPI 3.0.
 - Run `scripts/validate-openapi.ps1`.
-- Keep operation IDs unique.
-- If Power Automate flags a schema as too complex, simplify the response schema and re-import.
+- Confirm the primary import file contains only `RunMondayGraphQL`.
+- Do not add multiple direct GraphQL actions to `paths` or `x-ms-paths` in the primary import file.
 
 ## Security notes
 

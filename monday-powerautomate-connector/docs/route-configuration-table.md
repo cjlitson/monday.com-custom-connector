@@ -23,12 +23,12 @@ MondayWebhookRoutes
 | `DisplayName` | Single line text / Dataverse text | Yes | Friendly route name for admins and support users. |
 | `Description` | Multiple lines text / Dataverse multiline text | No | What the route does. |
 | `Enabled` | Yes/No / Dataverse boolean | Yes | Router should ignore or alert on disabled routes. |
-| `ActionType` | Choice | Yes | Suggested values: `SendEmail`, `TeamsMessage`, `SharePointCreateItem`, `CreateMondayUpdate`, `ChangeMondayStatus`, `Composite`. |
+| `ActionType` | Choice | Yes | Suggested values: `SendEmail`, `TeamsMessage`, `SharePointCreateItem`, `RunMondayGraphQLUpdate`, `RunMondayGraphQLStatus`, `Composite`. |
 | `EmailTo` | Single line text / Dataverse text | No | Required for email routes. Supports one or more addresses based on organization standards. |
 | `EmailCc` | Single line text / Dataverse text | No | Optional CC recipients. |
 | `EmailSubjectTemplate` | Single line text / Dataverse text | No | Template for email subjects. May include placeholders such as `{ItemName}` or `{BoardName}`. |
 | `EmailBodyTemplate` | Multiple lines text / Dataverse multiline text | No | Template for email bodies. May include placeholders such as `{ItemName}`, `{ItemId}`, `{BoardName}`, or column values. |
-| `CreateMondayUpdateAfterSend` | Yes/No / Dataverse boolean | Yes | If true, router should call `CreateMondayItemUpdate` after sending. |
+| `CreateMondayUpdateAfterSend` | Yes/No / Dataverse boolean | Yes | If true, router should call `RunMondayGraphQL` with a create update mutation after sending. |
 | `SetStatusAfterSend` | Single line text / Dataverse text | No | Optional status label to set after successful processing, such as `Done`. |
 | `Notes` | Multiple lines text / Dataverse multiline text | No | Support notes, owner, or implementation details. |
 
@@ -50,8 +50,8 @@ The email addresses above are placeholders. Replace them with organization-appro
 3. If no row is found, use `unknownRouteAlert` behavior.
 4. If the row is disabled, log the event and stop or alert admins.
 5. If the row is enabled, execute behavior based on `ActionType` and other fields.
-6. If `CreateMondayUpdateAfterSend` is true, call the custom connector's `CreateMondayItemUpdate` action.
-7. If `SetStatusAfterSend` has a value, call the custom connector's `ChangeMondayStatus` action.
+6. If `CreateMondayUpdateAfterSend` is true, call the custom connector's `RunMondayGraphQL` action with a create update mutation.
+7. If `SetStatusAfterSend` has a value, call the custom connector's `RunMondayGraphQL` action with a change status mutation.
 
 ## Future admin experience
 

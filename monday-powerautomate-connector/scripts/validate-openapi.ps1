@@ -47,6 +47,11 @@ if ($swagger.securityDefinitions.api_key.name -ne "Authorization") {
     exit 1
 }
 
+if ($swagger.'x-ms-paths') {
+    Write-Error "The primary Version 1 connector must not use x-ms-paths. Move multi-action definitions to connector/experimental/."
+    exit 1
+}
+
 $operationIds = New-Object System.Collections.Generic.List[string]
 foreach ($pathProperty in $swagger.paths.PSObject.Properties) {
     foreach ($methodProperty in $pathProperty.Value.PSObject.Properties) {
@@ -55,29 +60,15 @@ foreach ($pathProperty in $swagger.paths.PSObject.Properties) {
         }
     }
 }
-if ($swagger.'x-ms-paths') {
-    foreach ($pathProperty in $swagger.'x-ms-paths'.PSObject.Properties) {
-        foreach ($methodProperty in $pathProperty.Value.PSObject.Properties) {
-            if ($methodProperty.Value.operationId) {
-                $operationIds.Add([string]$methodProperty.Value.operationId)
-            }
-        }
-    }
+
+if ($operationIds.Count -ne 1) {
+    Write-Error "Expected exactly one operation in the primary connector but found $($operationIds.Count): $($operationIds -join ', ')."
+    exit 1
 }
 
-$requiredOperationIds = @(
-    "GetMondayItemDetails",
-    "CreateMondayItemUpdate",
-    "ChangeMondayStatus",
-    "ChangeMondayColumnValue",
-    "CreateMondayItem"
-)
-
-foreach ($operationId in $requiredOperationIds) {
-    if (-not $operationIds.Contains($operationId)) {
-        Write-Error "Missing operationId '$operationId'."
-        exit 1
-    }
+if ($operationIds[0] -ne "RunMondayGraphQL") {
+    Write-Error "Expected the only operationId to be RunMondayGraphQL but found '$($operationIds[0])'."
+    exit 1
 }
 
-Write-Host "OpenAPI JSON is valid, uses Swagger 2.0, and contains all required monday.com actions."
+Write-Host "OpenAPI JSON is valid, uses Swagger 2.0, targets api.monday.com/v2, and contains only RunMondayGraphQL."
