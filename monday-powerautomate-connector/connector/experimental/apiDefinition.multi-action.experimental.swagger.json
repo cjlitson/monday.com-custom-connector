@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "LV monday.com Actions",
-    "description": "Direct Power Automate custom connector for monday.com GraphQL API actions. This connector sends requests directly to https://api.monday.com/v2 and does not require Azure Functions or middleware.",
+    "title": "EXPERIMENTAL DEPRECATED - LV monday.com x-ms-paths Actions",
+    "description": "DEPRECATED/EXPERIMENTAL ONLY. Do not use as the primary Power Platform import file. This old x-ms-paths design is retained for reference because it can trigger duplicate APIM operation signatures such as POST /?operation={operation}.",
     "version": "1.0.0"
   },
   "host": "api.monday.com",

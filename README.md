@@ -4,24 +4,13 @@ This repository contains Power Platform custom connector assets for monday.com.
 
 The main project is in [`monday-powerautomate-connector/`](monday-powerautomate-connector/). It includes:
 
-- A direct Swagger/OpenAPI 2.0 Power Automate custom connector for monday.com GraphQL.
-- A reliable Version 1 primary connector with one generic action: **Run monday GraphQL request** (`RunMondayGraphQL`).
-- Sample request bodies for common monday.com GraphQL operations.
-- PowerShell validation and API test scripts.
-- Reusable monday webhook router design documentation for the existing Power Automate HTTP webhook router.
+- A friendly multi-action custom connector named **LV_monday_com_Actions**.
+- A primary Swagger/OpenAPI 2.0 definition with unique public paths for Power Automate actions.
+- Power Platform custom connector C# code that rewrites friendly requests to `POST https://api.monday.com/v2`.
+- Existing connection/auth configuration for monday.com API tokens in the `Authorization` header.
+- Experimental/deprecated references for the old `x-ms-paths` design and the previous single generic GraphQL connector.
+- Sample request bodies and validation scripts.
 
-Version 1 uses a single generic action because monday.com uses one GraphQL endpoint, `https://api.monday.com/v2`, for queries and mutations. Friendly actions can be added later with Azure middleware, custom connector code, or child flows without reintroducing duplicate direct GraphQL operation signatures in the primary import file.
+The primary design avoids `x-ms-paths` so Power Platform/APIM does not collapse the friendly operations into duplicate `POST /?operation={operation}` signatures. Makers see separate actions, but the connector still sends requests directly to monday.com without Azure Functions, middleware, or committed secrets.
 
-## Reusable monday webhook pattern
-
-The custom connector is for monday.com **actions**. The existing Power Automate HTTP webhook router remains the monday.com webhook **receiver**.
-
-```text
-monday webhook template
-  → Power Automate HTTP webhook router
-  → route lookup
-  → monday custom connector action
-  → email / Teams / SharePoint / monday update
-```
-
-Use generated URLs such as `[Router HTTP URL]&route=statusReadyEmail` in monday webhook automation templates. See [`monday-powerautomate-connector/docs/webhook-router-design.md`](monday-powerautomate-connector/docs/webhook-router-design.md) for the router design.
+See [`monday-powerautomate-connector/README.md`](monday-powerautomate-connector/README.md) for import instructions, validation, and test payloads.

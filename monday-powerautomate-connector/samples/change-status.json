@@ -1,0 +1,6 @@
+{
+  "boardId": "<BOARD_ID>",
+  "itemId": "<ITEM_ID>",
+  "columnId": "status",
+  "label": "Done"
+}

@@ -1,27 +1,32 @@
-# LV monday.com GraphQL connector files
+# LV_monday_com_Actions connector files
 
-This folder contains the Power Platform custom connector definition for **LV monday.com GraphQL**.
+This folder contains the primary Power Platform custom connector definition for **LV_monday_com_Actions**.
 
 ## Files
 
-- `apiDefinition.swagger.json` - primary Swagger/OpenAPI 2.0 definition for the reliable Version 1 single-action connector.
-- `apiProperties.json` - Power Platform connection metadata for the monday.com API token.
-- `experimental/apiDefinition.multi-action.experimental.swagger.json` - previous multi-action Swagger file retained for reference only.
+- `apiDefinition.swagger.json` - primary Swagger/OpenAPI 2.0 definition with friendly, unique public action paths.
+- `apiProperties.json` - Power Platform connection metadata, publisher metadata, and `scriptOperations` bindings.
+- `script.csx` - Power Platform custom connector C# script that converts friendly action inputs to monday.com GraphQL requests.
+- `experimental/apiDefinition.multi-action.experimental.swagger.json` - deprecated `x-ms-paths` multi-action reference; do not use for primary import.
+- `experimental/apiDefinition.single-action.graphql.swagger.json` - previous working single generic GraphQL fallback/reference.
 
 ## Endpoint and authentication
 
-- Base endpoint: `https://api.monday.com/v2`
-- Authentication: monday.com API token supplied by the connector connection in the `Authorization` header.
+- Public connector actions use distinct paths such as `/get-item-details` and `/create-item`.
+- `script.csx` rewrites each supported action to `POST https://api.monday.com/v2`.
+- Authentication remains the monday.com API token supplied by the connector connection in the `Authorization` header.
 - No token, board ID, item ID, or organization-specific secret is stored in these files.
 
-## Version 1 action
+## Friendly actions
 
 | Action | Operation ID | Purpose |
 | --- | --- | --- |
-| Run monday GraphQL request | `RunMondayGraphQL` | Runs any monday.com GraphQL query or mutation by accepting a required `query` string and optional `variables` object. |
+| Get monday item details | `GetMondayItemDetails` | Returns item id, name, board, group, and column values. |
+| Create monday item update/comment | `CreateMondayItemUpdate` | Creates an update/comment on a monday item. |
+| Change monday status column | `ChangeMondayStatus` | Changes a status column by friendly label; blank `columnId` defaults to `status`. |
+| Change monday column value | `ChangeMondayColumnValue` | Changes any column using a monday-compatible JSON string. |
+| Create monday item | `CreateMondayItem` | Creates an item with optional group and column values JSON. |
 
 ## Import notes
 
-Power Automate custom connectors import one OpenAPI operation per unique HTTP method/path signature. Because monday.com GraphQL uses one `POST /v2` endpoint for every query and mutation, the primary Version 1 connector exposes only one generic action and does not use `x-ms-paths`.
-
-The experimental multi-action Swagger file is not the primary import file. It can be used as a reference for future designs, but friendly actions should be added later through Azure middleware, custom connector code, or Power Automate child flows so that the imported connector avoids duplicate GraphQL endpoint signatures.
+Use `apiDefinition.swagger.json` as the primary import file and upload/enable `script.csx` as connector custom code. The primary definition intentionally does not use `x-ms-paths`; unique public paths avoid the duplicate APIM signature problem while custom code still sends requests directly to monday.com's single GraphQL endpoint.

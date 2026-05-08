@@ -18,6 +18,13 @@
     "iconBrandColor": "#00C875",
     "capabilities": [],
     "publisher": "LV",
-    "stackOwner": "monday.com"
+    "stackOwner": "monday.com",
+    "scriptOperations": [
+      "GetMondayItemDetails",
+      "CreateMondayItemUpdate",
+      "ChangeMondayStatus",
+      "ChangeMondayColumnValue",
+      "CreateMondayItem"
+    ]
   }
 }
