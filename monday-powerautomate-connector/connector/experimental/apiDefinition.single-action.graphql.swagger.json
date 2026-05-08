@@ -1,0 +1,128 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "FALLBACK - LV monday.com single GraphQL action",
+    "description": "Fallback/reference copy of the previous working single generic GraphQL connector. The primary connector now uses distinct public paths plus script.csx for friendly actions.",
+    "version": "1.0.0"
+  },
+  "host": "api.monday.com",
+  "basePath": "/v2",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter your monday.com API token when creating the connector connection. The token is supplied by Power Automate in the Authorization header and is not hard-coded or stored in this file."
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ],
+  "x-ms-connector-metadata": [
+    {
+      "propertyName": "Website",
+      "propertyValue": "https://monday.com"
+    },
+    {
+      "propertyName": "Privacy policy",
+      "propertyValue": "https://monday.com/l/privacy/privacy-policy/"
+    },
+    {
+      "propertyName": "Categories",
+      "propertyValue": "Productivity;Collaboration"
+    }
+  ],
+  "paths": {
+    "/": {
+      "post": {
+        "summary": "Run monday GraphQL request",
+        "description": "Runs a monday.com GraphQL query or mutation against the direct monday.com GraphQL endpoint.",
+        "operationId": "RunMondayGraphQL",
+        "x-ms-visibility": "important",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RunMondayGraphQLRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Raw monday.com GraphQL response.",
+            "schema": {
+              "$ref": "#/definitions/RunMondayGraphQLResponse"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/RunMondayGraphQLResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "RunMondayGraphQLRequest": {
+      "type": "object",
+      "required": [
+        "query"
+      ],
+      "properties": {
+        "query": {
+          "type": "string",
+          "title": "GraphQL query or mutation",
+          "description": "The monday.com GraphQL query or mutation to run."
+        },
+        "variables": {
+          "type": "object",
+          "title": "GraphQL variables",
+          "description": "Optional GraphQL variables object.",
+          "additionalProperties": {}
+        }
+      },
+      "additionalProperties": false,
+      "example": {
+        "query": "query GetMondayItemDetails($itemId: [ID!]!) { items(ids: $itemId) { id name } }",
+        "variables": {
+          "itemId": "<ITEM_ID>"
+        }
+      }
+    },
+    "RunMondayGraphQLResponse": {
+      "type": "object",
+      "description": "Raw monday.com GraphQL response. Successful GraphQL calls return data; GraphQL validation or execution problems may return errors.",
+      "properties": {
+        "data": {
+          "type": "object",
+          "description": "Raw monday.com GraphQL data object.",
+          "additionalProperties": {}
+        },
+        "errors": {
+          "type": "array",
+          "description": "Raw monday.com GraphQL errors array, when monday.com returns GraphQL errors.",
+          "items": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        }
+      },
+      "additionalProperties": {}
+    }
+  }
+}

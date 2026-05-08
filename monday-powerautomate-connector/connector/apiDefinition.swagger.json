@@ -1,9 +1,9 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "LV monday.com GraphQL",
-    "description": "Version 1 direct Power Automate custom connector for monday.com GraphQL. This connector sends one generic GraphQL request directly to https://api.monday.com/v2 and does not require Azure Functions or middleware.",
-    "version": "1.0.0"
+    "title": "LV_monday_com_Actions",
+    "description": "Power Automate custom connector for friendly monday.com actions. Public actions use distinct paths and custom connector code rewrites each request to the monday.com GraphQL endpoint.",
+    "version": "2.0.0"
   },
   "host": "api.monday.com",
   "basePath": "/v2",
@@ -29,48 +29,222 @@
       "api_key": []
     }
   ],
-  "x-ms-connector-metadata": [
-    {
-      "propertyName": "Website",
-      "propertyValue": "https://monday.com"
-    },
-    {
-      "propertyName": "Privacy policy",
-      "propertyValue": "https://monday.com/l/privacy/privacy-policy/"
-    },
-    {
-      "propertyName": "Categories",
-      "propertyValue": "Productivity;Collaboration"
-    }
-  ],
   "paths": {
-    "/": {
+    "/get-item-details": {
       "post": {
-        "summary": "Run monday GraphQL request",
-        "description": "Runs a monday.com GraphQL query or mutation against the direct monday.com GraphQL endpoint.",
-        "operationId": "RunMondayGraphQL",
+        "summary": "Get monday item details",
+        "description": "Returns the item id, item name, board details, group details, and column values for a monday.com item.",
+        "operationId": "GetMondayItemDetails",
         "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
         "parameters": [
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/RunMondayGraphQLRequest"
+              "$ref": "#/definitions/GetMondayItemDetailsRequest"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Raw monday.com GraphQL response.",
+            "description": "monday.com GraphQL response containing item details.",
             "schema": {
-              "$ref": "#/definitions/RunMondayGraphQLResponse"
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
             }
           },
           "default": {
             "description": "monday.com GraphQL or HTTP error response.",
             "schema": {
-              "$ref": "#/definitions/RunMondayGraphQLResponse"
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/create-update": {
+      "post": {
+        "summary": "Create monday item update/comment",
+        "description": "Creates an update/comment on a monday.com item.",
+        "operationId": "CreateMondayItemUpdate",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateMondayItemUpdateRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "monday.com GraphQL response containing the created update id.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/change-status": {
+      "post": {
+        "summary": "Change monday status column",
+        "description": "Changes a monday.com status column by friendly label. If Column ID is blank, the connector uses the default monday status column id: status.",
+        "operationId": "ChangeMondayStatus",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ChangeMondayStatusRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "monday.com GraphQL response containing the updated item id.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/change-column-value": {
+      "post": {
+        "summary": "Change monday column value",
+        "description": "Changes any monday.com column value using a monday-compatible JSON string for the target column type.",
+        "operationId": "ChangeMondayColumnValue",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ChangeMondayColumnValueRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "monday.com GraphQL response containing the updated item id.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
+    "/create-item": {
+      "post": {
+        "summary": "Create monday item",
+        "description": "Creates a monday.com item, optionally in a specific group and with monday-compatible column values JSON.",
+        "operationId": "CreateMondayItem",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateMondayItemRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "monday.com GraphQL response containing the created item.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
             }
           }
         }
@@ -78,33 +252,140 @@
     }
   },
   "definitions": {
-    "RunMondayGraphQLRequest": {
+    "GetMondayItemDetailsRequest": {
       "type": "object",
+      "description": "Input for the Get monday item details action.",
       "required": [
-        "query"
+        "itemId"
       ],
       "properties": {
-        "query": {
+        "itemId": {
           "type": "string",
-          "title": "GraphQL query or mutation",
-          "description": "The monday.com GraphQL query or mutation to run."
-        },
-        "variables": {
-          "type": "object",
-          "title": "GraphQL variables",
-          "description": "Optional GraphQL variables object.",
-          "additionalProperties": {}
+          "description": "The monday.com item ID to retrieve.",
+          "x-ms-summary": "Item ID"
         }
       },
-      "additionalProperties": false,
-      "example": {
-        "query": "query GetMondayItemDetails($itemId: [ID!]!) { items(ids: $itemId) { id name } }",
-        "variables": {
-          "itemId": "<ITEM_ID>"
-        }
-      }
+      "additionalProperties": false
     },
-    "RunMondayGraphQLResponse": {
+    "CreateMondayItemUpdateRequest": {
+      "type": "object",
+      "description": "Input for the Create monday item update/comment action.",
+      "required": [
+        "itemId",
+        "body"
+      ],
+      "properties": {
+        "itemId": {
+          "type": "string",
+          "description": "The monday.com item ID to comment on.",
+          "x-ms-summary": "Item ID"
+        },
+        "body": {
+          "type": "string",
+          "description": "The update/comment text to add to the item.",
+          "x-ms-summary": "Update body"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChangeMondayStatusRequest": {
+      "type": "object",
+      "description": "Input for the Change monday status column action.",
+      "required": [
+        "boardId",
+        "itemId",
+        "label"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The monday.com board ID containing the item.",
+          "x-ms-summary": "Board ID"
+        },
+        "itemId": {
+          "type": "string",
+          "description": "The monday.com item ID to update.",
+          "x-ms-summary": "Item ID"
+        },
+        "columnId": {
+          "type": "string",
+          "description": "The status column ID. Leave blank to use status.",
+          "x-ms-summary": "Status column ID",
+          "default": "status"
+        },
+        "label": {
+          "type": "string",
+          "description": "The status label to set, such as Done or Working on it.",
+          "x-ms-summary": "Status label"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChangeMondayColumnValueRequest": {
+      "type": "object",
+      "description": "Input for the Change monday column value action.",
+      "required": [
+        "boardId",
+        "itemId",
+        "columnId",
+        "value"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The monday.com board ID containing the item.",
+          "x-ms-summary": "Board ID"
+        },
+        "itemId": {
+          "type": "string",
+          "description": "The monday.com item ID to update.",
+          "x-ms-summary": "Item ID"
+        },
+        "columnId": {
+          "type": "string",
+          "description": "The column ID to update.",
+          "x-ms-summary": "Column ID"
+        },
+        "value": {
+          "type": "string",
+          "description": "A monday-compatible JSON string for the column value, for example {\"text\":\"Example\"}.",
+          "x-ms-summary": "Column value JSON"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CreateMondayItemRequest": {
+      "type": "object",
+      "description": "Input for the Create monday item action.",
+      "required": [
+        "boardId",
+        "itemName"
+      ],
+      "properties": {
+        "boardId": {
+          "type": "string",
+          "description": "The monday.com board ID where the item should be created.",
+          "x-ms-summary": "Board ID"
+        },
+        "itemName": {
+          "type": "string",
+          "description": "The name of the new monday.com item.",
+          "x-ms-summary": "Item name"
+        },
+        "groupId": {
+          "type": "string",
+          "description": "Optional monday.com group ID where the item should be created.",
+          "x-ms-summary": "Group ID"
+        },
+        "columnValues": {
+          "type": "string",
+          "description": "Optional monday-compatible JSON string for initial column values, for example {\"status\":{\"label\":\"Working on it\"}}.",
+          "x-ms-summary": "Column values JSON"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MondayGraphQlResponse": {
       "type": "object",
       "description": "Raw monday.com GraphQL response. Successful GraphQL calls return data; GraphQL validation or execution problems may return errors.",
       "properties": {
@@ -123,6 +404,21 @@
         }
       },
       "additionalProperties": {}
+    },
+    "ConnectorValidationError": {
+      "type": "object",
+      "description": "Validation error returned by connector custom code before the request is forwarded.",
+      "properties": {
+        "error": {
+          "type": "string",
+          "description": "Short validation error code."
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable validation message."
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

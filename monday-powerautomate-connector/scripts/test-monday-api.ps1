@@ -13,6 +13,7 @@ $uri = "https://api.monday.com/v2"
 $headers = @{
     Authorization = $Token
     "Content-Type" = "application/json"
+    "API-Version" = "2026-04"
 }
 
 $body = @{

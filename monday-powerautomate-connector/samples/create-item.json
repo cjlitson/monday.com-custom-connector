@@ -1,0 +1,6 @@
+{
+  "boardId": "<BOARD_ID>",
+  "itemName": "New item from Power Automate",
+  "groupId": "<GROUP_ID>",
+  "columnValues": "{\"status\":{\"label\":\"Working on it\"}}"
+}
