@@ -1,0 +1,9 @@
+{
+  "query": "mutation ChangeMondayColumnValue($boardId: ID!, $itemId: ID!, $columnId: String!, $columnValueJson: JSON!) { change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $columnValueJson) { id } }",
+  "variables": {
+    "boardId": "<BOARD_ID>",
+    "itemId": "<ITEM_ID>",
+    "columnId": "<COLUMN_ID>",
+    "columnValueJson": "{\"text\":\"Example value\"}"
+  }
+}
