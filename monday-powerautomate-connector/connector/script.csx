@@ -50,6 +50,11 @@ public class Script : ScriptBase
             return await BuildGetMondayItemDetailsResponseAsync(input, response).ConfigureAwait(false);
         }
 
+        if (operationId == "GetMondayItemColumnValue")
+        {
+            return await BuildGetMondayItemColumnValueResponseAsync(input, response).ConfigureAwait(false);
+        }
+
         if (!IsMetadataListOperation(operationId))
         {
             return response;
@@ -111,6 +116,8 @@ public class Script : ScriptBase
         {
             case "GetMondayItemDetails":
                 return BuildGetMondayItemDetails(input, out graphQlBody);
+            case "GetMondayItemColumnValue":
+                return BuildGetMondayItemColumnValue(input, out graphQlBody);
             case "CreateMondayItemUpdate":
                 return BuildCreateMondayItemUpdate(input, out graphQlBody);
             case "ChangeMondayStatus":
@@ -160,7 +167,21 @@ public class Script : ScriptBase
         }
 
         graphQlBody = GraphQl(
-            "query GetMondayItemDetails($itemIds: [ID!]!) { items(ids: $itemIds) { id name board { id name } group { id title } parent_item { id name } column_values { id text value type } } }",
+            "query GetMondayItemDetails($itemIds: [ID!]!) { items(ids: $itemIds) { id name board { id name columns { id title type } } group { id title } parent_item { id name } column_values { id text value type } } }",
+            new JObject { ["itemIds"] = new JArray(itemId) });
+        return null;
+    }
+
+    private static HttpResponseMessage BuildGetMondayItemColumnValue(JObject input, out JObject graphQlBody)
+    {
+        graphQlBody = null;
+        string itemId = RequiredString(input, "itemId");
+        string columnId = RequiredString(input, "columnId");
+        if (itemId == null) return MissingField("itemId");
+        if (columnId == null) return MissingField("columnId");
+
+        graphQlBody = GraphQl(
+            "query GetMondayItemColumnValue($itemIds: [ID!]!) { items(ids: $itemIds) { id board { id name columns { id title type } } column_values { id text value type } } }",
             new JObject { ["itemIds"] = new JArray(itemId) });
         return null;
     }
@@ -508,6 +529,7 @@ public class Script : ScriptBase
         }
 
         JToken columnValues = itemObject["column_values"];
+        JArray columnValueSummaries = BuildColumnValueSummaries(itemObject);
         JObject body = new JObject
         {
             ["success"] = true,
@@ -520,11 +542,300 @@ public class Script : ScriptBase
             ["groupName"] = ObjectPropertyAsString(itemObject, "group", "title"),
             ["parentItemId"] = ObjectPropertyAsString(itemObject, "parent_item", "id"),
             ["parentItemName"] = ObjectPropertyAsString(itemObject, "parent_item", "name"),
+            ["columnValues"] = columnValueSummaries,
+            ["columnValuesTextSummary"] = BuildColumnValuesTextSummary(columnValueSummaries),
+            ["columnValuesHtmlTable"] = BuildColumnValuesHtmlTable(columnValueSummaries),
             ["columnValuesJson"] = columnValues == null || columnValues.Type == JTokenType.Null ? "[]" : columnValues.ToString(Newtonsoft.Json.Formatting.None),
             ["rawResponseJson"] = rawResponseJson
         };
 
         return JsonResponse(mondayResponse.StatusCode, body);
+    }
+
+    private static async Task<HttpResponseMessage> BuildGetMondayItemColumnValueResponseAsync(JObject input, HttpResponseMessage mondayResponse)
+    {
+        string itemId = OptionalString(input, "itemId");
+        string requestedColumnId = OptionalString(input, "columnId");
+        string content = mondayResponse.Content == null ? null : await mondayResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+        JObject raw;
+
+        try
+        {
+            raw = JObject.Parse(content ?? string.Empty);
+        }
+        catch (JsonException)
+        {
+            return JsonResponse(mondayResponse.StatusCode, new JObject
+            {
+                ["success"] = false,
+                ["message"] = "monday.com returned a non-JSON response.",
+                ["itemId"] = itemId,
+                ["columnId"] = requestedColumnId,
+                ["rawResponseJson"] = content ?? string.Empty
+            });
+        }
+
+        string rawResponseJson = raw.ToString(Newtonsoft.Json.Formatting.None);
+        JArray errors = raw["errors"] as JArray;
+        if (errors != null && errors.Count > 0)
+        {
+            return JsonResponse(mondayResponse.StatusCode, new JObject
+            {
+                ["success"] = false,
+                ["message"] = BuildMondayErrorMessage(errors),
+                ["itemId"] = itemId,
+                ["columnId"] = requestedColumnId,
+                ["rawResponseJson"] = rawResponseJson
+            });
+        }
+
+        JObject itemObject = raw.SelectToken("data.items[0]") as JObject;
+        if (itemObject == null)
+        {
+            return JsonResponse(mondayResponse.StatusCode, new JObject
+            {
+                ["success"] = false,
+                ["message"] = "Item not found or token does not have access to this item.",
+                ["itemId"] = itemId,
+                ["columnId"] = requestedColumnId,
+                ["rawResponseJson"] = rawResponseJson
+            });
+        }
+
+        JArray summaries = BuildColumnValueSummaries(itemObject);
+        JObject requestedColumn = null;
+        foreach (JToken summary in summaries)
+        {
+            JObject summaryObject = summary as JObject;
+            if (summaryObject != null && string.Equals(AsString(summaryObject["columnId"]), requestedColumnId, StringComparison.OrdinalIgnoreCase))
+            {
+                requestedColumn = summaryObject;
+                break;
+            }
+        }
+
+        if (requestedColumn == null)
+        {
+            return JsonResponse(mondayResponse.StatusCode, new JObject
+            {
+                ["success"] = false,
+                ["message"] = $"Column '{requestedColumnId}' was not found on item '{itemId}'. Check the column ID and item access.",
+                ["itemId"] = AsString(itemObject["id"]) ?? itemId,
+                ["columnId"] = requestedColumnId,
+                ["rawResponseJson"] = rawResponseJson
+            });
+        }
+
+        return JsonResponse(mondayResponse.StatusCode, new JObject
+        {
+            ["success"] = true,
+            ["message"] = "Column value found.",
+            ["itemId"] = AsString(itemObject["id"]) ?? itemId,
+            ["columnId"] = AsString(requestedColumn["columnId"]) ?? requestedColumnId,
+            ["columnTitle"] = AsString(requestedColumn["columnTitle"]),
+            ["columnType"] = AsString(requestedColumn["columnType"]),
+            ["columnText"] = AsString(requestedColumn["text"]),
+            ["columnValueJson"] = AsString(requestedColumn["valueJson"]),
+            ["rawColumnJson"] = GetRawColumnValueJson(itemObject, requestedColumnId),
+            ["rawResponseJson"] = rawResponseJson
+        });
+    }
+
+    private static JArray BuildColumnValueSummaries(JObject itemObject)
+    {
+        JArray summaries = new JArray();
+        JObject boardColumnsById = BuildBoardColumnsById(itemObject);
+        JArray columnValues = itemObject == null ? null : itemObject["column_values"] as JArray;
+        if (columnValues == null)
+        {
+            return summaries;
+        }
+
+        bool hasNonEmptyColumn = false;
+        foreach (JToken columnValueToken in columnValues)
+        {
+            JObject columnValue = columnValueToken as JObject;
+            if (columnValue == null)
+            {
+                continue;
+            }
+
+            string columnId = AsString(columnValue["id"]);
+            JObject embeddedColumn = columnValue["column"] as JObject;
+            JObject boardColumn = !string.IsNullOrWhiteSpace(columnId) ? boardColumnsById[columnId] as JObject : null;
+            string text = AsString(columnValue["text"]);
+            string valueJson = ColumnValueJson(columnValue["value"]);
+            bool hasValue = !string.IsNullOrWhiteSpace(text) || !string.IsNullOrWhiteSpace(valueJson);
+            if (hasValue)
+            {
+                hasNonEmptyColumn = true;
+            }
+
+            summaries.Add(new JObject
+            {
+                ["columnId"] = columnId,
+                ["columnTitle"] = FirstNonEmpty(AsString(embeddedColumn == null ? null : embeddedColumn["title"]), AsString(boardColumn == null ? null : boardColumn["title"]), columnId),
+                ["columnType"] = FirstNonEmpty(AsString(columnValue["type"]), AsString(embeddedColumn == null ? null : embeddedColumn["type"]), AsString(boardColumn == null ? null : boardColumn["type"])),
+                ["text"] = text,
+                ["valueJson"] = valueJson
+            });
+        }
+
+        if (!hasNonEmptyColumn || summaries.Count == 0)
+        {
+            return summaries;
+        }
+
+        JArray nonEmptySummaries = new JArray();
+        foreach (JToken summaryToken in summaries)
+        {
+            JObject summary = summaryToken as JObject;
+            if (summary != null && (!string.IsNullOrWhiteSpace(AsString(summary["text"])) || !string.IsNullOrWhiteSpace(AsString(summary["valueJson"]))))
+            {
+                nonEmptySummaries.Add(summary);
+            }
+        }
+
+        return nonEmptySummaries;
+    }
+
+    private static JObject BuildBoardColumnsById(JObject itemObject)
+    {
+        JObject columnsById = new JObject();
+        JArray boardColumns = itemObject == null ? null : itemObject.SelectToken("board.columns") as JArray;
+        if (boardColumns == null)
+        {
+            return columnsById;
+        }
+
+        foreach (JToken columnToken in boardColumns)
+        {
+            JObject column = columnToken as JObject;
+            string columnId = column == null ? null : AsString(column["id"]);
+            if (!string.IsNullOrWhiteSpace(columnId))
+            {
+                columnsById[columnId] = column;
+            }
+        }
+
+        return columnsById;
+    }
+
+    private static string BuildColumnValuesTextSummary(JArray summaries)
+    {
+        if (summaries == null || summaries.Count == 0)
+        {
+            return "No column values were returned for this item.";
+        }
+
+        JArray lines = new JArray();
+        foreach (JToken summaryToken in summaries)
+        {
+            JObject summary = summaryToken as JObject;
+            if (summary == null)
+            {
+                continue;
+            }
+
+            string title = FirstNonEmpty(AsString(summary["columnTitle"]), AsString(summary["columnId"]), "Column");
+            string value = FirstNonEmpty(AsString(summary["text"]), AsString(summary["valueJson"]), string.Empty);
+            lines.Add($"{title}: {value}");
+        }
+
+        return lines.Count == 0 ? "No column values were returned for this item." : string.Join("\n", lines.Values<string>());
+    }
+
+    private static string BuildColumnValuesHtmlTable(JArray summaries)
+    {
+        StringBuilder html = new StringBuilder();
+        html.Append("<table>");
+        html.Append("<tr><th>Column</th><th>Value</th></tr>");
+
+        if (summaries == null || summaries.Count == 0)
+        {
+            html.Append("<tr><td colspan=\"2\">No column values were returned for this item.</td></tr>");
+        }
+        else
+        {
+            foreach (JToken summaryToken in summaries)
+            {
+                JObject summary = summaryToken as JObject;
+                if (summary == null)
+                {
+                    continue;
+                }
+
+                string title = FirstNonEmpty(AsString(summary["columnTitle"]), AsString(summary["columnId"]), "Column");
+                string value = FirstNonEmpty(AsString(summary["text"]), AsString(summary["valueJson"]), string.Empty);
+                html.Append("<tr><td>");
+                html.Append(HtmlEncode(title));
+                html.Append("</td><td>");
+                html.Append(HtmlEncode(value));
+                html.Append("</td></tr>");
+            }
+        }
+
+        html.Append("</table>");
+        return html.ToString();
+    }
+
+    private static string GetRawColumnValueJson(JObject itemObject, string columnId)
+    {
+        JArray columnValues = itemObject == null ? null : itemObject["column_values"] as JArray;
+        if (columnValues == null)
+        {
+            return null;
+        }
+
+        foreach (JToken columnValueToken in columnValues)
+        {
+            JObject columnValue = columnValueToken as JObject;
+            if (columnValue != null && string.Equals(AsString(columnValue["id"]), columnId, StringComparison.OrdinalIgnoreCase))
+            {
+                return columnValue.ToString(Newtonsoft.Json.Formatting.None);
+            }
+        }
+
+        return null;
+    }
+
+    private static string ColumnValueJson(JToken valueToken)
+    {
+        if (valueToken == null || valueToken.Type == JTokenType.Null)
+        {
+            return null;
+        }
+
+        string value = valueToken.Type == JTokenType.String ? (string)valueToken : valueToken.ToString(Newtonsoft.Json.Formatting.None);
+        return string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+
+    private static string FirstNonEmpty(params string[] values)
+    {
+        foreach (string value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private static string HtmlEncode(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        return value
+            .Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;")
+            .Replace("\"", "&quot;")
+            .Replace("'", "&#39;");
     }
 
     private static string BuildMondayErrorMessage(JArray errors)
@@ -780,6 +1091,7 @@ public class Script : ScriptBase
     private static bool IsKnownOperation(string operationId)
     {
         return operationId == "GetMondayItemDetails"
+            || operationId == "GetMondayItemColumnValue"
             || operationId == "CreateMondayItemUpdate"
             || operationId == "ChangeMondayStatus"
             || operationId == "ChangeMondayColumnValue"

@@ -21,6 +21,7 @@
     "stackOwner": "monday.com",
     "scriptOperations": [
       "GetMondayItemDetails",
+      "GetMondayItemColumnValue",
       "CreateMondayItemUpdate",
       "ChangeMondayStatus",
       "ChangeMondayColumnValue",

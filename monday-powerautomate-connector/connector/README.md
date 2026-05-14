@@ -13,7 +13,7 @@ This folder contains the primary Power Platform custom connector definition for 
 ## Endpoint and authentication
 
 - Public connector actions use distinct paths such as `/get-item-details`, `/list-boards`, `/change-date-column`, and `/create-subitem`.
-- `script.csx` rewrites each supported action to `POST https://api.monday.com/v2`.
+- `script.csx` rewrites each supported action to `POST https://api.monday.com/v2`, including the item detail and item column value actions that reshape monday column values into friendly dynamic content.
 - Authentication remains the monday.com API token supplied by the connector connection in the `Authorization` header.
 - No token, board ID, item ID, or organization-specific secret is stored in these files.
 
@@ -21,7 +21,7 @@ This folder contains the primary Power Platform custom connector definition for 
 
 | Group | Operations |
 | --- | --- |
-| Preserved item actions | `GetMondayItemDetails`, `CreateMondayItemUpdate`, `ChangeMondayStatus`, `ChangeMondayColumnValue`, `CreateMondayItem` |
+| Preserved item actions | `GetMondayItemDetails`, `GetMondayItemColumnValue`, `CreateMondayItemUpdate`, `ChangeMondayStatus`, `ChangeMondayColumnValue`, `CreateMondayItem` |
 | Dropdown metadata actions | `ListMondayWorkspaces`, `ListMondayBoards`, `ListMondayBoardGroups`, `ListMondayBoardColumns`, `ListMondayBoardItems`, `ListMondayStatusLabels` |
 | Typed column updates | `ChangeMondayDateColumn`, `ChangeMondayTextColumn`, `ChangeMondayNumberColumn` |
 | Subitem actions | `CreateMondaySubitem`, `GetMondaySubitems`, `GetMondaySubitemDetails`, `ChangeMondaySubitemColumnValue` |
@@ -40,4 +40,4 @@ Native webhook triggers are intentionally not implemented in the primary connect
 
 ## Import notes
 
-Use `apiDefinition.swagger.json` as the primary import file and upload/enable `script.csx` as connector custom code. The primary definition intentionally does not use `x-ms-paths`; unique public paths avoid the duplicate APIM signature problem while custom code still sends requests directly to monday.com's single GraphQL endpoint.
+Use `apiDefinition.swagger.json` as the primary import file and upload/enable `script.csx` as connector custom code. `GetMondayItemDetails` exposes readable column values as an array, text summary, and HTML table, while `GetMondayItemColumnValue` returns one requested column as typed dynamic content. The primary definition intentionally does not use `x-ms-paths`; unique public paths avoid the duplicate APIM signature problem while custom code still sends requests directly to monday.com's single GraphQL endpoint.

@@ -56,6 +56,7 @@ monday-powerautomate-connector/
 | Maker action | Operation ID | Public path | Required inputs | Optional inputs |
 | --- | --- | --- | --- | --- |
 | Get monday item details | `GetMondayItemDetails` | `POST /get-item-details` | `itemId` | None |
+| Get monday item column value | `GetMondayItemColumnValue` | `POST /get-item-column-value` | `itemId`, `columnId` | None |
 | Create monday item update/comment | `CreateMondayItemUpdate` | `POST /create-update` | `itemId`, `updateText` | None |
 | Change monday status column | `ChangeMondayStatus` | `POST /change-status` | `boardId`, `itemId`, `label` | `columnId` defaults to `status` |
 | Change monday date column | `ChangeMondayDateColumn` | `POST /change-date-column` | `boardId`, `itemId`, `columnId`, `date` | `time` |
@@ -68,7 +69,15 @@ monday-powerautomate-connector/
 
 These are the normal user-facing actions and are marked `x-ms-visibility: important` so makers see them first in Power Automate. The create-update input is now named `updateText` in the maker experience. Existing flows or older samples that still send `body` continue to work through the connector script fallback, but new flows should use `updateText`.
 
-**Get monday item details** now returns direct dynamic content fields instead of only the raw monday.com GraphQL envelope. In Power Automate, makers should be able to select fields such as `success`, `message`, `itemId`, `itemName`, `boardId`, `boardName`, `groupId`, `groupName`, `parentItemId`, and `parentItemName` directly from dynamic content without adding a separate **Parse JSON** action. `columnValuesJson` is still returned as a compact JSON string because monday board columns and column value shapes are dynamic by board; use it when the flow needs board-specific column data. `rawResponseJson` remains available for troubleshooting.
+**Get monday item details** now returns direct dynamic content fields instead of only the raw monday.com GraphQL envelope. In Power Automate, makers should be able to select fields such as `success`, `message`, `itemId`, `itemName`, `boardId`, `boardName`, `groupId`, `groupName`, `parentItemId`, and `parentItemName` directly from dynamic content without adding a separate **Parse JSON** action.
+
+It also returns monday board column values in three maker-friendly ways:
+
+1. **Column Values** (`columnValues`) - an array of objects with `columnId`, `columnTitle`, `columnType`, `text`, and `valueJson` for each returned board column value.
+2. **Column Values Text Summary** (`columnValuesTextSummary`) - a plain-text, line-by-line summary such as `Status: Working on it`, suitable for plain-text email or Teams messages.
+3. **Column Values HTML Table** (`columnValuesHtmlTable`) - a simple HTML table with encoded column titles and values, suitable for the HTML body of a Power Automate **Send an email** action.
+
+For email scenarios, use **Column Values HTML Table** when the email body is HTML, or **Column Values Text Summary** when the email body is plain text. For one specific board field, use **Get monday item column value** with the item ID and monday column ID; it returns `columnTitle`, `columnType`, `columnText`, and `columnValueJson` as direct dynamic content. `columnValuesJson` remains available as a compact JSON string for troubleshooting and advanced board-specific logic, and `rawResponseJson` remains available for full response troubleshooting.
 
 ### Advanced raw JSON actions
 
@@ -173,7 +182,7 @@ Future/experimental native trigger work should account for monday's challenge-re
 5. Configure security with the existing API key setting. The API key header name is `Authorization`.
 6. Enable/upload custom code from `connector/script.csx` and ensure custom code is attached to all operations listed in `connector/apiProperties.json` under `scriptOperations`.
 7. Create a connection and enter the monday.com API token when prompted.
-8. Test helper/list actions first to find IDs, then test **Get monday item details** and confirm its flattened fields appear as dynamic content. Then test typed column, item, update, and subitem actions. Normal user-facing actions are marked important; helper/list and raw JSON actions are marked advanced.
+8. Test helper/list actions first to find IDs, then test **Get monday item details** and confirm its flattened fields appear as dynamic content. Then test **Get monday item column value** for one column ID, followed by typed column, item, update, and subitem actions. Normal user-facing actions are marked important; helper/list and raw JSON actions are marked advanced.
 
 ## Validation checklist
 
@@ -184,7 +193,8 @@ Before importing, verify:
 - Operation IDs are unique.
 - Public POST paths are unique.
 - `scriptOperations` include every scripted operation.
-- `GetMondayItemDetails` 200 responses reference `GetMondayItemDetailsResponse`, and every user-facing response property has `x-ms-summary`.
+- `GetMondayItemDetails` 200 responses reference `GetMondayItemDetailsResponse`, including `columnValues`, `columnValuesTextSummary`, and `columnValuesHtmlTable` with `x-ms-summary`.
+- `GetMondayItemColumnValue` exists at `POST /get-item-column-value` and its 200 response references `GetMondayItemColumnValueResponse`.
 - The primary Swagger file does **not** contain `x-ms-paths`.
 - The primary Swagger file does **not** contain `x-ms-dynamic-values`.
 - The primary Swagger file does **not** contain `x-ms-dynamic-list`.
@@ -208,9 +218,24 @@ pwsh ./validate-openapi.ps1
 
 Sample file: `samples/get-item-details.json`
 
+Use the returned **Column Values HTML Table** dynamic content in an HTML email body, or **Column Values Text Summary** in a plain-text email body. Use **Column Values JSON** only when you intentionally want the raw monday.com column value payload for troubleshooting or advanced parsing.
+
 ```json
 {
   "itemId": "<ITEM_ID>"
+}
+```
+
+### Get monday item column value
+
+Sample file: `samples/get-item-column-value.json`
+
+Use this action when a flow needs one specific board field, such as a Status, Due Date, Owner, or customer-facing text column. Pass the item ID and monday column ID, then insert **Column Text** in an email or message. If the column is not found, the action returns `success: false` and a message explaining which column ID was missing.
+
+```json
+{
+  "itemId": "<ITEM_ID>",
+  "columnId": "<COLUMN_ID>"
 }
 ```
 
