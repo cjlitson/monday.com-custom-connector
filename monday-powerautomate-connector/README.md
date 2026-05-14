@@ -88,17 +88,18 @@ These operations return a dropdown-friendly response shape:
 
 ## Dynamic dropdown behavior
 
-The Swagger uses `x-ms-dynamic-values` and companion `x-ms-dynamic-list` metadata where request-body parameter references are needed, so makers can choose IDs from dropdowns while still retaining manual ID entry if a value is not listed.
+Dynamic dropdowns are temporarily disabled in the primary connector so the Swagger imports cleanly in Power Platform. Board, item, column, group, and status-label fields remain manual ID entry fields.
 
-Implemented dropdown bindings:
+The list/metadata actions remain available for direct use and testing:
 
-- `boardId` fields use `ListMondayBoards`.
-- `groupId` fields use `ListMondayBoardGroups` with the selected `boardId` passed as `body/boardId`.
-- `itemId` fields use `ListMondayBoardItems` with the selected `boardId` passed as `body/boardId` when the action has a board field.
-- `columnId` fields use `ListMondayBoardColumns` with `body/boardId` and, for typed actions, a recommended `columnType` filter such as `date`, `text`, `numbers`, or `status`.
-- Status `label` fields use `ListMondayStatusLabels` with `body/boardId` and `body/columnId`.
+- `ListMondayWorkspaces`
+- `ListMondayBoards`
+- `ListMondayBoardGroups`
+- `ListMondayBoardColumns`
+- `ListMondayBoardItems`
+- `ListMondayStatusLabels`
 
-If a dropdown does not populate in Power Automate, run **List monday board columns** or the relevant metadata action directly from the connector Test tab to verify the token, board access, and IDs.
+These actions still return `value` arrays suitable for future dropdown binding while preserving the raw monday GraphQL response under `raw` for troubleshooting. Dropdowns will be added back in a later version after the metadata actions are restructured for Power Platform dynamic parameter binding. Until then, run the relevant list action from the connector Test tab and paste the returned IDs into the manual fields.
 
 ## Typed column update actions
 
@@ -151,8 +152,10 @@ Before importing, verify:
 - Operation IDs are unique.
 - Public POST paths are unique.
 - `scriptOperations` include every scripted operation.
-- Dynamic dropdown operation IDs reference real operations.
 - The primary Swagger file does **not** contain `x-ms-paths`.
+- The primary Swagger file does **not** contain `x-ms-dynamic-values`.
+- The primary Swagger file does **not** contain `x-ms-dynamic-list`.
+- No `required` array is empty.
 - No monday.com API token or secret is committed.
 - README import instructions and test payloads are present.
 

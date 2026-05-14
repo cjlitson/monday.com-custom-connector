@@ -4,7 +4,7 @@ This folder contains the primary Power Platform custom connector definition for 
 
 ## Files
 
-- `apiDefinition.swagger.json` - primary Swagger/OpenAPI 2.0 definition with friendly, unique public action paths and dynamic dropdown metadata.
+- `apiDefinition.swagger.json` - primary Swagger/OpenAPI 2.0 definition with friendly, unique public action paths and manual ID entry fields.
 - `apiProperties.json` - Power Platform connection metadata, publisher metadata, and `scriptOperations` bindings for every custom-code action.
 - `script.csx` - Power Platform custom connector C# script that converts friendly action inputs to monday.com GraphQL requests and rewrites calls to `https://api.monday.com/v2`.
 - `experimental/apiDefinition.multi-action.experimental.swagger.json` - deprecated `x-ms-paths` multi-action reference; do not use for primary import.
@@ -28,7 +28,7 @@ This folder contains the primary Power Platform custom connector definition for 
 
 ## Dynamic dropdowns
 
-The Swagger uses `x-ms-dynamic-values` and companion `x-ms-dynamic-list` metadata on board, group, item, column, and status label fields. The metadata actions return a `value` array suitable for Power Platform dropdown binding while preserving the raw monday GraphQL response under `raw` for troubleshooting.
+Dynamic dropdowns are temporarily disabled in the primary connector so the Swagger imports cleanly in Power Platform. Board, item, column, group, and status-label fields remain manual ID entry fields, and the list/metadata actions still return `value` arrays plus `raw` GraphQL responses for direct testing. Dropdowns will be added back in a later version after the metadata actions are restructured for Power Platform dynamic parameter binding.
 
 ## Subitems
 
