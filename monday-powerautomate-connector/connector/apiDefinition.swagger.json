@@ -872,105 +872,23 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID containing the item.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         },
         "itemId": {
           "type": "string",
           "description": "The monday.com item ID to update.",
-          "x-ms-summary": "Item ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardItems",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardItems",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Item ID"
         },
         "columnId": {
           "type": "string",
           "description": "The status column ID. Leave blank to use status.",
           "x-ms-summary": "Status column ID",
-          "default": "status",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardColumns",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnType": "status"
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardColumns",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnType": {
-                "value": "status"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "default": "status"
         },
         "label": {
           "type": "string",
           "description": "The status label to set, such as Done or Working on it.",
-          "x-ms-summary": "Status label",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayStatusLabels",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "title",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnId": {
-                "parameterReference": "body/columnId"
-              }
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayStatusLabels",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnId": {
-                "parameterReference": "body/columnId"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "title"
-          }
+          "x-ms-summary": "Status label"
         }
       },
       "additionalProperties": false
@@ -988,67 +906,17 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID containing the item.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         },
         "itemId": {
           "type": "string",
           "description": "The monday.com item ID to update.",
-          "x-ms-summary": "Item ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardItems",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardItems",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Item ID"
         },
         "columnId": {
           "type": "string",
           "description": "The column ID to update.",
-          "x-ms-summary": "Column ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardColumns",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardColumns",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Column ID"
         },
         "value": {
           "type": "string",
@@ -1069,13 +937,7 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID where the item should be created.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         },
         "itemName": {
           "type": "string",
@@ -1085,29 +947,7 @@
         "groupId": {
           "type": "string",
           "description": "Optional monday.com group ID where the item should be created.",
-          "x-ms-summary": "Group ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardGroups",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardGroups",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Group ID"
         },
         "columnValues": {
           "type": "string",
@@ -1155,14 +995,12 @@
     "ListMondayWorkspacesRequest": {
       "type": "object",
       "description": "Input for listing monday.com workspaces for dropdowns.",
-      "required": [],
       "properties": {},
       "additionalProperties": false
     },
     "ListMondayBoardsRequest": {
       "type": "object",
       "description": "Input for listing monday.com boards for dropdowns.",
-      "required": [],
       "properties": {
         "workspaceId": {
           "type": "string",
@@ -1182,13 +1020,7 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID whose groups should be listed.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         }
       },
       "additionalProperties": false
@@ -1203,13 +1035,7 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID whose columns should be listed.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         },
         "columnType": {
           "type": "string",
@@ -1229,13 +1055,7 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID whose items should be listed.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         },
         "limit": {
           "type": "integer",
@@ -1260,44 +1080,12 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID containing the status column.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         },
         "columnId": {
           "type": "string",
           "description": "The status column ID whose labels should be listed.",
-          "x-ms-summary": "Status column ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardColumns",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnType": "status"
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardColumns",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnType": {
-                "value": "status"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Status column ID"
         }
       },
       "additionalProperties": false
@@ -1315,71 +1103,17 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID containing the item.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         },
         "itemId": {
           "type": "string",
           "description": "The monday.com item ID to update.",
-          "x-ms-summary": "Item ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardItems",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardItems",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Item ID"
         },
         "columnId": {
           "type": "string",
           "description": "The date column ID to update. You can pick from the dropdown or enter an ID manually.",
-          "x-ms-summary": "Column ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardColumns",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnType": "date"
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardColumns",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnType": {
-                "value": "date"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Column ID"
         },
         "date": {
           "type": "string",
@@ -1409,71 +1143,17 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID containing the item.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         },
         "itemId": {
           "type": "string",
           "description": "The monday.com item ID to update.",
-          "x-ms-summary": "Item ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardItems",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardItems",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Item ID"
         },
         "columnId": {
           "type": "string",
           "description": "The text column ID to update. You can pick from the dropdown or enter an ID manually.",
-          "x-ms-summary": "Column ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardColumns",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnType": "text"
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardColumns",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnType": {
-                "value": "text"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Column ID"
         },
         "text": {
           "type": "string",
@@ -1496,71 +1176,17 @@
         "boardId": {
           "type": "string",
           "description": "The monday.com board ID containing the item.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         },
         "itemId": {
           "type": "string",
           "description": "The monday.com item ID to update.",
-          "x-ms-summary": "Item ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardItems",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardItems",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Item ID"
         },
         "columnId": {
           "type": "string",
           "description": "The number column ID to update. You can pick from the dropdown or enter an ID manually.",
-          "x-ms-summary": "Column ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardColumns",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnType": "numbers"
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardColumns",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              },
-              "columnType": {
-                "value": "numbers"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Column ID"
         },
         "number": {
           "type": "number",
@@ -1640,13 +1266,7 @@
         "boardId": {
           "type": "string",
           "description": "The board ID to use for the subitem column update. Classic boards may require the hidden subitems board ID; multi-level boards use the main board ID.",
-          "x-ms-summary": "Board ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoards",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name"
-          }
+          "x-ms-summary": "Board ID"
         },
         "subitemId": {
           "type": "string",
@@ -1656,29 +1276,7 @@
         "columnId": {
           "type": "string",
           "description": "The subitem column ID to update.",
-          "x-ms-summary": "Column ID",
-          "x-ms-dynamic-values": {
-            "operationId": "ListMondayBoardColumns",
-            "value-collection": "value",
-            "value-path": "id",
-            "value-title": "name",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            }
-          },
-          "x-ms-dynamic-list": {
-            "operationId": "ListMondayBoardColumns",
-            "parameters": {
-              "boardId": {
-                "parameterReference": "body/boardId"
-              }
-            },
-            "itemsPath": "value",
-            "itemValuePath": "id",
-            "itemTitlePath": "name"
-          }
+          "x-ms-summary": "Column ID"
         },
         "value": {
           "type": "string",

@@ -80,7 +80,7 @@ if ($swagger.securityDefinitions.api_key.name -ne "Authorization") {
     exit 1
 }
 
-if ($swagger.'x-ms-paths') {
+if ($null -ne $swagger.PSObject.Properties["x-ms-paths"]) {
     Write-Error "The primary connector must not use x-ms-paths. Keep x-ms-paths definitions under connector/experimental/ only."
     exit 1
 }
@@ -125,34 +125,44 @@ if ($missingScriptOps -or $unexpectedScriptOps) {
     exit 1
 }
 
-function Get-ExtensionOperationIds {
-    param([object]$Node)
-    $ids = New-Object System.Collections.Generic.List[string]
-    if ($null -eq $Node) { return $ids }
+function Find-JsonKeyOccurrences {
+    param(
+        [object]$Node,
+        [string[]]$KeyNames,
+        [string]$Path = "root"
+    )
+
+    $matches = New-Object System.Collections.Generic.List[string]
+    if ($null -eq $Node) { return $matches }
+
     if ($Node -is [System.Array]) {
-        foreach ($item in $Node) { $ids.AddRange((Get-ExtensionOperationIds -Node $item)) }
-        return $ids
-    }
-    if ($Node.PSObject.Properties) {
-        foreach ($prop in $Node.PSObject.Properties) {
-            if (($prop.Name -eq "x-ms-dynamic-values" -or $prop.Name -eq "x-ms-dynamic-list") -and $prop.Value.operationId) {
-                $ids.Add([string]$prop.Value.operationId)
-            }
-            $ids.AddRange((Get-ExtensionOperationIds -Node $prop.Value))
+        for ($i = 0; $i -lt $Node.Count; $i++) {
+            $matches.AddRange((Find-JsonKeyOccurrences -Node $Node[$i] -KeyNames $KeyNames -Path "$Path[$i]"))
         }
+        return $matches
     }
-    return $ids
+
+    if ($Node -isnot [pscustomobject]) { return $matches }
+
+    foreach ($prop in $Node.PSObject.Properties) {
+        $currentPath = "$Path/$($prop.Name)"
+        if ($KeyNames -contains $prop.Name) {
+            $matches.Add($currentPath)
+        }
+        $matches.AddRange((Find-JsonKeyOccurrences -Node $prop.Value -KeyNames $KeyNames -Path $currentPath))
+    }
+
+    return $matches
 }
 
-$dynamicOperationIds = Get-ExtensionOperationIds -Node $swagger
-$missingDynamicTargets = $dynamicOperationIds | Sort-Object -Unique | Where-Object { $operationIds -notcontains $_ }
-if ($missingDynamicTargets) {
-    Write-Error "Dynamic dropdown operationIds reference missing operations: $($missingDynamicTargets -join ', ')."
+$forbiddenExtensionKeys = @("x-ms-dynamic-values", "x-ms-dynamic-list", "x-ms-paths")
+$forbiddenExtensionOccurrences = Find-JsonKeyOccurrences -Node $swagger -KeyNames $forbiddenExtensionKeys
+if ($forbiddenExtensionOccurrences) {
+    Write-Error "Forbidden primary Swagger extension keys found: $($forbiddenExtensionOccurrences -join '; ')."
     exit 1
 }
 
-
-function Get-DynamicListParameterValidationErrors {
+function Get-EmptyRequiredArrayErrors {
     param(
         [object]$Node,
         [string]$Path = "root"
@@ -163,7 +173,7 @@ function Get-DynamicListParameterValidationErrors {
 
     if ($Node -is [System.Array]) {
         for ($i = 0; $i -lt $Node.Count; $i++) {
-            $errors.AddRange((Get-DynamicListParameterValidationErrors -Node $Node[$i] -Path "$Path[$i]"))
+            $errors.AddRange((Get-EmptyRequiredArrayErrors -Node $Node[$i] -Path "$Path[$i]"))
         }
         return $errors
     }
@@ -171,62 +181,19 @@ function Get-DynamicListParameterValidationErrors {
     if ($Node -isnot [pscustomobject]) { return $errors }
 
     foreach ($prop in $Node.PSObject.Properties) {
-        if ($prop.Name -eq "x-ms-dynamic-list") {
-            $dynamicList = $prop.Value
-            $dynamicListPath = "$Path/x-ms-dynamic-list"
-            if ($null -ne $dynamicList -and $dynamicList -is [pscustomobject]) {
-                $parametersProperty = $dynamicList.PSObject.Properties["parameters"]
-                if ($null -ne $parametersProperty -and $null -ne $parametersProperty.Value) {
-                    $parameters = $parametersProperty.Value
-                    if ($parameters -isnot [pscustomobject]) {
-                        $errors.Add("$dynamicListPath/parameters must be an object when present.")
-                    }
-                    else {
-                        foreach ($parameter in $parameters.PSObject.Properties) {
-                            $parameterPath = "$dynamicListPath/parameters/$($parameter.Name)"
-                            $parameterValue = $parameter.Value
-                            if ($parameterValue -isnot [pscustomobject]) {
-                                $actualType = if ($null -eq $parameterValue) { "Null" } else { $parameterValue.GetType().Name }
-                                $errors.Add("$parameterPath must be an object with either a value or parameterReference property, but found $actualType.")
-                                continue
-                            }
-
-                            $hasValue = $null -ne $parameterValue.PSObject.Properties["value"]
-                            $hasParameterReference = $null -ne $parameterValue.PSObject.Properties["parameterReference"]
-                            if ($hasValue -eq $hasParameterReference) {
-                                $errors.Add("$parameterPath must contain exactly one of value or parameterReference.")
-                                continue
-                            }
-
-                            if ($hasValue) {
-                                $staticValue = $parameterValue.PSObject.Properties["value"].Value
-                                if ($null -eq $staticValue -or $staticValue -is [pscustomobject] -or $staticValue -is [System.Array]) {
-                                    $actualType = if ($null -eq $staticValue) { "Null" } else { $staticValue.GetType().Name }
-                                    $errors.Add("$parameterPath/value must be a scalar static value, but found $actualType.")
-                                }
-                            }
-
-                            if ($hasParameterReference) {
-                                $referenceValue = $parameterValue.PSObject.Properties["parameterReference"].Value
-                                if ($referenceValue -isnot [string] -or [string]::IsNullOrWhiteSpace($referenceValue)) {
-                                    $errors.Add("$parameterPath/parameterReference must be a non-empty string.")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        $currentPath = "$Path/$($prop.Name)"
+        if ($prop.Name -eq "required" -and $prop.Value -is [System.Array] -and $prop.Value.Count -eq 0) {
+            $errors.Add($currentPath)
         }
-
-        $errors.AddRange((Get-DynamicListParameterValidationErrors -Node $prop.Value -Path "$Path/$($prop.Name)"))
+        $errors.AddRange((Get-EmptyRequiredArrayErrors -Node $prop.Value -Path $currentPath))
     }
 
     return $errors
 }
 
-$dynamicListParameterErrors = Get-DynamicListParameterValidationErrors -Node $swagger
-if ($dynamicListParameterErrors) {
-    Write-Error "Invalid x-ms-dynamic-list parameter mappings found: $($dynamicListParameterErrors -join '; ')"
+$emptyRequiredArrays = Get-EmptyRequiredArrayErrors -Node $swagger
+if ($emptyRequiredArrays) {
+    Write-Error "Empty required arrays found in primary Swagger: $($emptyRequiredArrays -join '; '). Remove required when no fields are required."
     exit 1
 }
 
@@ -247,4 +214,4 @@ foreach ($file in $filesToScan) {
     }
 }
 
-Write-Host "OpenAPI and apiProperties JSON are valid. Swagger 2.0 is preserved, x-ms-paths is absent, operationIds and POST paths are unique, scriptOperations cover every scripted action, dynamic dropdown references resolve, x-ms-dynamic-list parameters are object mappings, and no token/secret patterns were found."
+Write-Host "OpenAPI and apiProperties JSON are valid. Swagger 2.0 is preserved, x-ms-paths is absent, x-ms-dynamic-values is absent, x-ms-dynamic-list is absent, required arrays are non-empty when present, operationIds and POST paths are unique, scriptOperations cover every scripted action, and no token/secret patterns were found."

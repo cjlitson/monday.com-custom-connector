@@ -13,4 +13,6 @@ The main project is in [`monday-powerautomate-connector/`](monday-powerautomate-
 
 The primary design avoids `x-ms-paths` so Power Platform/APIM does not collapse the friendly operations into duplicate `POST /?operation={operation}` signatures. Makers see separate actions, but the connector still sends requests directly to monday.com without Azure Functions, middleware, or committed secrets.
 
+Dynamic dropdowns are temporarily disabled in the primary connector. Board, item, column, group, and status-label fields remain manual ID entry fields; dropdowns will be added back in a later version after the metadata actions are restructured for Power Platform dynamic parameter binding.
+
 See [`monday-powerautomate-connector/README.md`](monday-powerautomate-connector/README.md) for import instructions, validation, and test payloads.
