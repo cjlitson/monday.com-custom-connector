@@ -8,6 +8,7 @@ $ErrorActionPreference = "Stop"
 
 $expectedOperationIds = @(
     "GetMondayItemDetails",
+    "GetMondayItemColumnValue",
     "CreateMondayItemUpdate",
     "ChangeMondayStatus",
     "ChangeMondayColumnValue",
@@ -29,6 +30,7 @@ $expectedOperationIds = @(
 
 $userFacingOperationIds = @(
     "GetMondayItemDetails",
+    "GetMondayItemColumnValue",
     "CreateMondayItemUpdate",
     "ChangeMondayStatus",
     "ChangeMondayDateColumn",
@@ -247,6 +249,9 @@ $expectedGetItemDetailsResponseProperties = @(
     "groupName",
     "parentItemId",
     "parentItemName",
+    "columnValues",
+    "columnValuesTextSummary",
+    "columnValuesHtmlTable",
     "columnValuesJson",
     "rawResponseJson"
 )
@@ -265,6 +270,72 @@ foreach ($propertyName in $expectedGetItemDetailsResponseProperties) {
 if ($missingGetItemDetailsResponseSummaries.Count -gt 0) {
     Write-Error "GetMondayItemDetailsResponse user-facing property summary errors: $($missingGetItemDetailsResponseSummaries -join '; ')."
     exit 1
+}
+
+$getItemColumnValueOperation = $swagger.paths."/get-item-column-value".post
+if (-not $getItemColumnValueOperation) {
+    Write-Error "Missing GetMondayItemColumnValue operation at POST /get-item-column-value."
+    exit 1
+}
+
+if ($getItemColumnValueOperation.operationId -ne "GetMondayItemColumnValue") {
+    Write-Error "POST /get-item-column-value must use operationId GetMondayItemColumnValue."
+    exit 1
+}
+
+$getItemColumnValueResponseRef = $getItemColumnValueOperation.responses."200".schema."`$ref"
+if ($getItemColumnValueResponseRef -ne "#/definitions/GetMondayItemColumnValueResponse") {
+    Write-Error "GetMondayItemColumnValue 200 response must reference #/definitions/GetMondayItemColumnValueResponse but found '$getItemColumnValueResponseRef'."
+    exit 1
+}
+
+$getItemColumnValueResponse = $swagger.definitions.GetMondayItemColumnValueResponse
+if (-not $getItemColumnValueResponse) {
+    Write-Error "Missing GetMondayItemColumnValueResponse definition."
+    exit 1
+}
+
+$expectedGetItemColumnValueResponseProperties = @(
+    "success",
+    "message",
+    "itemId",
+    "columnId",
+    "columnTitle",
+    "columnType",
+    "columnText",
+    "columnValueJson",
+    "rawColumnJson",
+    "rawResponseJson"
+)
+
+$missingGetItemColumnValueResponseSummaries = New-Object System.Collections.Generic.List[string]
+foreach ($propertyName in $expectedGetItemColumnValueResponseProperties) {
+    $property = $getItemColumnValueResponse.properties.PSObject.Properties[$propertyName]
+    if (-not $property) {
+        $missingGetItemColumnValueResponseSummaries.Add("$propertyName missing from GetMondayItemColumnValueResponse")
+    }
+    elseif (-not $property.Value."x-ms-summary") {
+        $missingGetItemColumnValueResponseSummaries.Add("$propertyName missing x-ms-summary")
+    }
+}
+
+if ($missingGetItemColumnValueResponseSummaries.Count -gt 0) {
+    Write-Error "GetMondayItemColumnValueResponse user-facing property summary errors: $($missingGetItemColumnValueResponseSummaries -join '; ')."
+    exit 1
+}
+
+$columnValueSummary = $swagger.definitions.MondayColumnValueSummary
+if (-not $columnValueSummary) {
+    Write-Error "Missing MondayColumnValueSummary definition."
+    exit 1
+}
+
+foreach ($propertyName in @("columnId", "columnTitle", "columnType", "text", "valueJson")) {
+    $property = $columnValueSummary.properties.PSObject.Properties[$propertyName]
+    if (-not $property -or -not $property.Value."x-ms-summary") {
+        Write-Error "MondayColumnValueSummary property '$propertyName' is missing or missing x-ms-summary."
+        exit 1
+    }
 }
 
 $bodyParametersMissingSummary = New-Object System.Collections.Generic.List[string]
@@ -323,4 +394,4 @@ foreach ($file in $filesToScan) {
     }
 }
 
-Write-Host "OpenAPI and apiProperties JSON are valid. Swagger 2.0 is preserved, GetMondayItemDetails returns GetMondayItemDetailsResponse with x-ms-summary values, x-ms-paths is absent, x-ms-dynamic-values is absent, x-ms-dynamic-list is absent, required arrays are non-empty when present, operationIds and POST paths are unique, body parameters have x-ms-summary, action visibility matches the UX rules, scriptOperations cover every scripted action, and no token/secret patterns were found."
+Write-Host "OpenAPI and apiProperties JSON are valid. Swagger 2.0 is preserved, GetMondayItemDetails returns enhanced column value fields and GetMondayItemColumnValue returns a typed response with x-ms-summary values, x-ms-paths is absent, x-ms-dynamic-values is absent, x-ms-dynamic-list is absent, required arrays are non-empty when present, operationIds and POST paths are unique, body parameters have x-ms-summary, action visibility matches the UX rules, scriptOperations cover every scripted action, and no token/secret patterns were found."

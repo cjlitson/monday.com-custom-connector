@@ -1,6 +1,8 @@
 {
-  "query": "query GetMondayItemDetails($itemId: [ID!]!) { items(ids: $itemId) { id name board { id name } group { id title } column_values { id text value type } } }",
+  "query": "query GetMondayItemDetails($itemIds: [ID!]!) { items(ids: $itemIds) { id name board { id name columns { id title type } } group { id title } parent_item { id name } column_values { id text value type } } }",
   "variables": {
-    "itemId": "<ITEM_ID>"
+    "itemIds": [
+      "<ITEM_ID>"
+    ]
   }
 }

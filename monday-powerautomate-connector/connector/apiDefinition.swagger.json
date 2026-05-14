@@ -76,6 +76,52 @@
         }
       }
     },
+    "/get-item-column-value": {
+      "post": {
+        "summary": "Get monday item column value",
+        "description": "Returns one requested monday.com item column value with a friendly title, text value, raw column JSON, and raw response JSON.",
+        "operationId": "GetMondayItemColumnValue",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetMondayItemColumnValueRequest"
+            },
+            "x-ms-summary": "Get Item Column Value Request",
+            "description": "Get Item Column Value Request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friendly monday.com item column value response.",
+            "schema": {
+              "$ref": "#/definitions/GetMondayItemColumnValueResponse"
+            }
+          },
+          "400": {
+            "description": "Validation error returned by the connector script before forwarding to monday.com.",
+            "schema": {
+              "$ref": "#/definitions/ConnectorValidationError"
+            }
+          },
+          "default": {
+            "description": "monday.com GraphQL or HTTP error response.",
+            "schema": {
+              "$ref": "#/definitions/MondayGraphQlResponse"
+            }
+          }
+        }
+      }
+    },
     "/create-update": {
       "post": {
         "summary": "Create monday item update/comment",
@@ -864,9 +910,30 @@
       },
       "additionalProperties": false
     },
+    "GetMondayItemColumnValueRequest": {
+      "type": "object",
+      "description": "Input for the Get monday item column value action.",
+      "required": [
+        "itemId",
+        "columnId"
+      ],
+      "properties": {
+        "itemId": {
+          "type": "string",
+          "description": "The monday item ID. This may appear as pulseId in webhook payloads.",
+          "x-ms-summary": "Item ID"
+        },
+        "columnId": {
+          "type": "string",
+          "description": "The monday column ID, not the display name. Use List monday board columns to find it.",
+          "x-ms-summary": "Column ID"
+        }
+      },
+      "additionalProperties": false
+    },
     "GetMondayItemDetailsResponse": {
       "type": "object",
-      "description": "Flattened response for the Get monday item details action. It exposes stable item, board, group, and parent item fields as direct dynamic content and keeps dynamic board column values as JSON.",
+      "description": "Flattened response for the Get monday item details action. It exposes stable item, board, group, parent item, and readable column value fields as direct dynamic content and keeps the raw dynamic board column values JSON for troubleshooting.",
       "properties": {
         "success": {
           "type": "boolean",
@@ -918,10 +985,117 @@
           "description": "The parent item name when the item is a subitem; otherwise this field is blank or null.",
           "x-ms-summary": "Parent Item Name"
         },
+        "columnValues": {
+          "type": "array",
+          "description": "Readable monday.com board column values for the item. Each entry includes the column ID, display title, column type, text value, and raw value JSON string so makers can use column values without Parse JSON.",
+          "x-ms-summary": "Column Values",
+          "items": {
+            "$ref": "#/definitions/MondayColumnValueSummary"
+          }
+        },
+        "columnValuesTextSummary": {
+          "type": "string",
+          "description": "Plain-text summary of readable monday.com column titles and values, with one Column: Value pair per line. Use this directly in plain-text email bodies or Teams messages.",
+          "x-ms-summary": "Column Values Text Summary"
+        },
+        "columnValuesHtmlTable": {
+          "type": "string",
+          "description": "Simple HTML table of readable monday.com column titles and values. Values are HTML encoded so this can be used directly in a Send email action HTML body.",
+          "x-ms-summary": "Column Values HTML Table"
+        },
         "columnValuesJson": {
           "type": "string",
           "description": "Compact JSON string containing the monday.com column_values array. This remains JSON because board columns and their value shapes are dynamic by board.",
           "x-ms-summary": "Column Values JSON"
+        },
+        "rawResponseJson": {
+          "type": "string",
+          "description": "Compact JSON string containing the full monday.com response, or the raw non-JSON response text if monday.com did not return JSON.",
+          "x-ms-summary": "Raw Response JSON"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MondayColumnValueSummary": {
+      "type": "object",
+      "description": "Readable summary for one monday.com item column value.",
+      "properties": {
+        "columnId": {
+          "type": "string",
+          "description": "The monday column ID.",
+          "x-ms-summary": "Column ID"
+        },
+        "columnTitle": {
+          "type": "string",
+          "description": "The display title of the monday column when available.",
+          "x-ms-summary": "Column Title"
+        },
+        "columnType": {
+          "type": "string",
+          "description": "The monday column type when available.",
+          "x-ms-summary": "Column Type"
+        },
+        "text": {
+          "type": "string",
+          "description": "The readable text value returned by monday.com for this column.",
+          "x-ms-summary": "Column Text"
+        },
+        "valueJson": {
+          "type": "string",
+          "description": "The compact raw JSON value returned by monday.com for this column, as a string.",
+          "x-ms-summary": "Column Value JSON"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GetMondayItemColumnValueResponse": {
+      "type": "object",
+      "description": "Response for the Get monday item column value action. It returns one requested column with friendly dynamic content plus raw JSON for troubleshooting.",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "True when the item and requested column were found; false when monday.com returned errors, no accessible item, or the column was not found.",
+          "x-ms-summary": "Success"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable result message, including helpful not-found details when the requested column is not available.",
+          "x-ms-summary": "Message"
+        },
+        "itemId": {
+          "type": "string",
+          "description": "The requested monday item ID, or the item ID returned by monday.com when an item is found.",
+          "x-ms-summary": "Item ID"
+        },
+        "columnId": {
+          "type": "string",
+          "description": "The requested monday column ID.",
+          "x-ms-summary": "Column ID"
+        },
+        "columnTitle": {
+          "type": "string",
+          "description": "The display title of the requested monday column when available.",
+          "x-ms-summary": "Column Title"
+        },
+        "columnType": {
+          "type": "string",
+          "description": "The monday column type when available.",
+          "x-ms-summary": "Column Type"
+        },
+        "columnText": {
+          "type": "string",
+          "description": "The readable text value returned by monday.com for the requested column.",
+          "x-ms-summary": "Column Text"
+        },
+        "columnValueJson": {
+          "type": "string",
+          "description": "The compact raw JSON value returned by monday.com for the requested column, as a string.",
+          "x-ms-summary": "Column Value JSON"
+        },
+        "rawColumnJson": {
+          "type": "string",
+          "description": "Compact JSON string containing the full monday.com column_values object for the requested column.",
+          "x-ms-summary": "Raw Column JSON"
         },
         "rawResponseJson": {
           "type": "string",
