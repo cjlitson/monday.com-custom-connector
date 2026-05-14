@@ -493,7 +493,8 @@ public class Script : ScriptBase
         }
 
         JToken item = raw.SelectToken("data.items[0]");
-        if (item == null || item.Type == JTokenType.Null)
+        JObject itemObject = item as JObject;
+        if (itemObject == null)
         {
             JObject notFoundBody = new JObject
             {
@@ -506,19 +507,19 @@ public class Script : ScriptBase
             return JsonResponse(mondayResponse.StatusCode, notFoundBody);
         }
 
-        JToken columnValues = item["column_values"];
+        JToken columnValues = itemObject["column_values"];
         JObject body = new JObject
         {
             ["success"] = true,
             ["message"] = "Item found.",
-            ["itemId"] = AsString(item["id"]) ?? itemId,
-            ["itemName"] = AsString(item["name"]),
-            ["boardId"] = AsString(item["board"]?["id"]),
-            ["boardName"] = AsString(item["board"]?["name"]),
-            ["groupId"] = AsString(item["group"]?["id"]),
-            ["groupName"] = AsString(item["group"]?["title"]),
-            ["parentItemId"] = AsString(item["parent_item"]?["id"]),
-            ["parentItemName"] = AsString(item["parent_item"]?["name"]),
+            ["itemId"] = AsString(itemObject["id"]) ?? itemId,
+            ["itemName"] = AsString(itemObject["name"]),
+            ["boardId"] = ObjectPropertyAsString(itemObject, "board", "id"),
+            ["boardName"] = ObjectPropertyAsString(itemObject, "board", "name"),
+            ["groupId"] = ObjectPropertyAsString(itemObject, "group", "id"),
+            ["groupName"] = ObjectPropertyAsString(itemObject, "group", "title"),
+            ["parentItemId"] = ObjectPropertyAsString(itemObject, "parent_item", "id"),
+            ["parentItemName"] = ObjectPropertyAsString(itemObject, "parent_item", "name"),
             ["columnValuesJson"] = columnValues == null || columnValues.Type == JTokenType.Null ? "[]" : columnValues.ToString(Newtonsoft.Json.Formatting.None),
             ["rawResponseJson"] = rawResponseJson
         };
@@ -531,7 +532,8 @@ public class Script : ScriptBase
         JArray messages = new JArray();
         foreach (JToken error in errors)
         {
-            string message = AsString(error["message"]);
+            JObject errorObject = error as JObject;
+            string message = errorObject == null ? AsString(error) : AsString(errorObject["message"]);
             if (!string.IsNullOrWhiteSpace(message))
             {
                 messages.Add(message);
@@ -709,6 +711,31 @@ public class Script : ScriptBase
 
         int value;
         return int.TryParse(token.ToString(), out value) ? value : defaultValue;
+    }
+
+
+    private static string ObjectPropertyAsString(JToken parent, string objectPropertyName, string childPropertyName)
+    {
+        if (parent == null || parent.Type == JTokenType.Null)
+        {
+            return null;
+        }
+
+        JObject parentObject = parent as JObject;
+        if (parentObject == null)
+        {
+            return null;
+        }
+
+        // monday may return optional objects such as parent_item as JSON null, which must not be indexed like an object.
+        JToken childObjectToken = parentObject[objectPropertyName];
+        JObject childObject = childObjectToken as JObject;
+        if (childObject == null)
+        {
+            return null;
+        }
+
+        return AsString(childObject[childPropertyName]);
     }
 
     private static string AsString(JToken token)
