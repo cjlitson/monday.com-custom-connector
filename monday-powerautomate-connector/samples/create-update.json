@@ -1,4 +1,4 @@
 {
   "itemId": "<ITEM_ID>",
-  "body": "Email was sent to the requester."
+  "updateText": "Email was sent to the requester."
 }

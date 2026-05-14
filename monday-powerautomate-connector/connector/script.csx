@@ -164,13 +164,21 @@ public class Script : ScriptBase
     {
         graphQlBody = null;
         string itemId = RequiredString(input, "itemId");
-        string body = RequiredString(input, "body");
+        string updateText = RequiredString(input, "updateText");
+
+        // Backward compatibility for flows and test payloads created before the
+        // maker-facing field was renamed from body to updateText.
+        if (updateText == null)
+        {
+            updateText = RequiredString(input, "body");
+        }
+
         if (itemId == null) return MissingField("itemId");
-        if (body == null) return MissingField("body");
+        if (updateText == null) return MissingField("updateText");
 
         graphQlBody = GraphQl(
             "mutation CreateMondayItemUpdate($itemId: ID!, $body: String!) { create_update(item_id: $itemId, body: $body) { id } }",
-            new JObject { ["itemId"] = itemId, ["body"] = body });
+            new JObject { ["itemId"] = itemId, ["body"] = updateText });
         return null;
     }
 

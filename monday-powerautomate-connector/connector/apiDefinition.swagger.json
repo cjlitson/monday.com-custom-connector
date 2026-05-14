@@ -49,7 +49,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/GetMondayItemDetailsRequest"
-            }
+            },
+            "x-ms-summary": "Get Item Details Request",
+            "description": "Get Item Details Request"
           }
         ],
         "responses": {
@@ -93,7 +95,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/CreateMondayItemUpdateRequest"
-            }
+            },
+            "x-ms-summary": "Create Update Request",
+            "description": "Create Update Request"
           }
         ],
         "responses": {
@@ -137,7 +141,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/ChangeMondayStatusRequest"
-            }
+            },
+            "x-ms-summary": "Change Status Request",
+            "description": "Change Status Request"
           }
         ],
         "responses": {
@@ -167,7 +173,7 @@
         "summary": "Change monday column value",
         "description": "Changes any monday.com column value using a monday-compatible JSON string for the target column type.",
         "operationId": "ChangeMondayColumnValue",
-        "x-ms-visibility": "important",
+        "x-ms-visibility": "advanced",
         "consumes": [
           "application/json"
         ],
@@ -181,7 +187,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/ChangeMondayColumnValueRequest"
-            }
+            },
+            "x-ms-summary": "Change Column Value Request",
+            "description": "Change Column Value Request"
           }
         ],
         "responses": {
@@ -225,7 +233,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/CreateMondayItemRequest"
-            }
+            },
+            "x-ms-summary": "Create Item Request",
+            "description": "Create Item Request"
           }
         ],
         "responses": {
@@ -255,23 +265,14 @@
         "summary": "List monday workspaces",
         "description": "Returns monday.com workspaces as array-friendly id/name objects for dropdowns.",
         "operationId": "ListMondayWorkspaces",
-        "x-ms-visibility": "internal",
+        "x-ms-visibility": "advanced",
         "consumes": [
           "application/json"
         ],
         "produces": [
           "application/json"
         ],
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/ListMondayWorkspacesRequest"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Returns monday.com workspaces as array-friendly id/name objects for dropdowns.",
@@ -299,7 +300,7 @@
         "summary": "List monday boards",
         "description": "Returns monday.com boards for dropdowns, optionally filtered by workspace ID.",
         "operationId": "ListMondayBoards",
-        "x-ms-visibility": "internal",
+        "x-ms-visibility": "advanced",
         "consumes": [
           "application/json"
         ],
@@ -310,10 +311,12 @@
           {
             "name": "body",
             "in": "body",
-            "required": true,
+            "required": false,
             "schema": {
               "$ref": "#/definitions/ListMondayBoardsRequest"
-            }
+            },
+            "x-ms-summary": "List Boards Request",
+            "description": "List Boards Request"
           }
         ],
         "responses": {
@@ -343,7 +346,7 @@
         "summary": "List monday board groups",
         "description": "Returns groups for a selected monday.com board for dropdowns.",
         "operationId": "ListMondayBoardGroups",
-        "x-ms-visibility": "internal",
+        "x-ms-visibility": "advanced",
         "consumes": [
           "application/json"
         ],
@@ -357,7 +360,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/ListMondayBoardGroupsRequest"
-            }
+            },
+            "x-ms-summary": "List Board Groups Request",
+            "description": "List Board Groups Request"
           }
         ],
         "responses": {
@@ -387,7 +392,7 @@
         "summary": "List monday board columns",
         "description": "Returns columns for a selected monday.com board. This action is visible for troubleshooting dropdown configuration and column IDs.",
         "operationId": "ListMondayBoardColumns",
-        "x-ms-visibility": "important",
+        "x-ms-visibility": "advanced",
         "consumes": [
           "application/json"
         ],
@@ -401,7 +406,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/ListMondayBoardColumnsRequest"
-            }
+            },
+            "x-ms-summary": "List Board Columns Request",
+            "description": "List Board Columns Request"
           }
         ],
         "responses": {
@@ -431,7 +438,7 @@
         "summary": "List monday board items",
         "description": "Returns items for a selected monday.com board for dropdowns. Uses items_page and includes cursor when monday.com returns one.",
         "operationId": "ListMondayBoardItems",
-        "x-ms-visibility": "internal",
+        "x-ms-visibility": "advanced",
         "consumes": [
           "application/json"
         ],
@@ -445,7 +452,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/ListMondayBoardItemsRequest"
-            }
+            },
+            "x-ms-summary": "List Board Items Request",
+            "description": "List Board Items Request"
           }
         ],
         "responses": {
@@ -475,7 +484,7 @@
         "summary": "List monday status labels",
         "description": "Returns configured labels for a selected status column by parsing the column settings_str returned by monday.com.",
         "operationId": "ListMondayStatusLabels",
-        "x-ms-visibility": "internal",
+        "x-ms-visibility": "advanced",
         "consumes": [
           "application/json"
         ],
@@ -489,7 +498,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/ListMondayStatusLabelsRequest"
-            }
+            },
+            "x-ms-summary": "List Status Labels Request",
+            "description": "List Status Labels Request"
           }
         ],
         "responses": {
@@ -533,7 +544,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/ChangeMondayDateColumnRequest"
-            }
+            },
+            "x-ms-summary": "Change Date Request",
+            "description": "Change Date Request"
           }
         ],
         "responses": {
@@ -577,7 +590,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/ChangeMondayTextColumnRequest"
-            }
+            },
+            "x-ms-summary": "Change Text Request",
+            "description": "Change Text Request"
           }
         ],
         "responses": {
@@ -621,7 +636,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/ChangeMondayNumberColumnRequest"
-            }
+            },
+            "x-ms-summary": "Change Number Request",
+            "description": "Change Number Request"
           }
         ],
         "responses": {
@@ -665,7 +682,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/CreateMondaySubitemRequest"
-            }
+            },
+            "x-ms-summary": "Create Subitem Request",
+            "description": "Create Subitem Request"
           }
         ],
         "responses": {
@@ -709,7 +728,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/GetMondaySubitemsRequest"
-            }
+            },
+            "x-ms-summary": "Get Subitems Request",
+            "description": "Get Subitems Request"
           }
         ],
         "responses": {
@@ -753,7 +774,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/GetMondaySubitemDetailsRequest"
-            }
+            },
+            "x-ms-summary": "Get Subitem Details Request",
+            "description": "Get Subitem Details Request"
           }
         ],
         "responses": {
@@ -783,7 +806,7 @@
         "summary": "Change monday subitem column value",
         "description": "Changes any monday.com subitem column value using a monday-compatible JSON string. Classic boards may require the hidden subitems board ID; multi-level boards use the main board ID.",
         "operationId": "ChangeMondaySubitemColumnValue",
-        "x-ms-visibility": "important",
+        "x-ms-visibility": "advanced",
         "consumes": [
           "application/json"
         ],
@@ -797,7 +820,9 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/ChangeMondaySubitemColumnValueRequest"
-            }
+            },
+            "x-ms-summary": "Change Subitem Column Value Request",
+            "description": "Change Subitem Column Value Request"
           }
         ],
         "responses": {
@@ -833,7 +858,7 @@
       "properties": {
         "itemId": {
           "type": "string",
-          "description": "The monday.com item ID to retrieve.",
+          "description": "The monday item ID. This may appear as pulseId in webhook payloads.",
           "x-ms-summary": "Item ID"
         }
       },
@@ -844,18 +869,18 @@
       "description": "Input for the Create monday item update/comment action.",
       "required": [
         "itemId",
-        "body"
+        "updateText"
       ],
       "properties": {
         "itemId": {
           "type": "string",
-          "description": "The monday.com item ID to comment on.",
+          "description": "The monday item ID. This may appear as pulseId in webhook payloads.",
           "x-ms-summary": "Item ID"
         },
-        "body": {
+        "updateText": {
           "type": "string",
-          "description": "The update/comment text to add to the item.",
-          "x-ms-summary": "Update body"
+          "description": "Text to add as an update/comment on the monday item.",
+          "x-ms-summary": "Update Text"
         }
       },
       "additionalProperties": false
@@ -871,24 +896,24 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The monday.com board ID containing the item.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         },
         "itemId": {
           "type": "string",
-          "description": "The monday.com item ID to update.",
+          "description": "The monday item ID. This may appear as pulseId in webhook payloads.",
           "x-ms-summary": "Item ID"
         },
         "columnId": {
           "type": "string",
-          "description": "The status column ID. Leave blank to use status.",
-          "x-ms-summary": "Status column ID",
+          "description": "The monday column ID, not the display name. Use List monday board columns to find it.",
+          "x-ms-summary": "Column ID",
           "default": "status"
         },
         "label": {
           "type": "string",
-          "description": "The status label to set, such as Done or Working on it.",
-          "x-ms-summary": "Status label"
+          "description": "The visible status label, such as Done or Working on it.",
+          "x-ms-summary": "Status Label"
         }
       },
       "additionalProperties": false
@@ -905,23 +930,23 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The monday.com board ID containing the item.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         },
         "itemId": {
           "type": "string",
-          "description": "The monday.com item ID to update.",
+          "description": "The monday item ID. This may appear as pulseId in webhook payloads.",
           "x-ms-summary": "Item ID"
         },
         "columnId": {
           "type": "string",
-          "description": "The column ID to update.",
+          "description": "The monday column ID, not the display name. Use List monday board columns to find it.",
           "x-ms-summary": "Column ID"
         },
         "value": {
           "type": "string",
-          "description": "A monday-compatible JSON string for the column value, for example {\"text\":\"Example\"}.",
-          "x-ms-summary": "Column value JSON"
+          "description": "Advanced monday-compatible JSON value. Use typed actions such as Change monday date, text, number, or status when possible.",
+          "x-ms-summary": "Column Value JSON"
         }
       },
       "additionalProperties": false
@@ -936,7 +961,7 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The monday.com board ID where the item should be created.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         },
         "itemName": {
@@ -946,13 +971,13 @@
         },
         "groupId": {
           "type": "string",
-          "description": "Optional monday.com group ID where the item should be created.",
+          "description": "The monday group ID. Use List monday board groups to find it.",
           "x-ms-summary": "Group ID"
         },
         "columnValues": {
           "type": "string",
           "description": "Optional monday-compatible JSON string for initial column values, for example {\"status\":{\"label\":\"Working on it\"}}.",
-          "x-ms-summary": "Column values JSON"
+          "x-ms-summary": "Column Values JSON"
         }
       },
       "additionalProperties": false
@@ -1019,7 +1044,7 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The monday.com board ID whose groups should be listed.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         }
       },
@@ -1034,7 +1059,7 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The monday.com board ID whose columns should be listed.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         },
         "columnType": {
@@ -1054,7 +1079,7 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The monday.com board ID whose items should be listed.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         },
         "limit": {
@@ -1079,13 +1104,13 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The monday.com board ID containing the status column.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         },
         "columnId": {
           "type": "string",
-          "description": "The status column ID whose labels should be listed.",
-          "x-ms-summary": "Status column ID"
+          "description": "The monday column ID, not the display name. Use List monday board columns to find it.",
+          "x-ms-summary": "Column ID"
         }
       },
       "additionalProperties": false
@@ -1102,28 +1127,28 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The monday.com board ID containing the item.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         },
         "itemId": {
           "type": "string",
-          "description": "The monday.com item ID to update.",
+          "description": "The monday item ID. This may appear as pulseId in webhook payloads.",
           "x-ms-summary": "Item ID"
         },
         "columnId": {
           "type": "string",
-          "description": "The date column ID to update. You can pick from the dropdown or enter an ID manually.",
+          "description": "The monday column ID, not the display name. Use List monday board columns to find it.",
           "x-ms-summary": "Column ID"
         },
         "date": {
           "type": "string",
-          "description": "Date to set in yyyy-MM-dd format.",
+          "description": "Date value in yyyy-MM-dd format.",
           "x-ms-summary": "Date",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
         },
         "time": {
           "type": "string",
-          "description": "Optional time to set in HH:mm format.",
+          "description": "Optional time value in HH:mm format.",
           "x-ms-summary": "Time",
           "pattern": "^\\d{2}:\\d{2}$"
         }
@@ -1142,17 +1167,17 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The monday.com board ID containing the item.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         },
         "itemId": {
           "type": "string",
-          "description": "The monday.com item ID to update.",
+          "description": "The monday item ID. This may appear as pulseId in webhook payloads.",
           "x-ms-summary": "Item ID"
         },
         "columnId": {
           "type": "string",
-          "description": "The text column ID to update. You can pick from the dropdown or enter an ID manually.",
+          "description": "The monday column ID, not the display name. Use List monday board columns to find it.",
           "x-ms-summary": "Column ID"
         },
         "text": {
@@ -1175,17 +1200,17 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The monday.com board ID containing the item.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         },
         "itemId": {
           "type": "string",
-          "description": "The monday.com item ID to update.",
+          "description": "The monday item ID. This may appear as pulseId in webhook payloads.",
           "x-ms-summary": "Item ID"
         },
         "columnId": {
           "type": "string",
-          "description": "The number column ID to update. You can pick from the dropdown or enter an ID manually.",
+          "description": "The monday column ID, not the display name. Use List monday board columns to find it.",
           "x-ms-summary": "Column ID"
         },
         "number": {
@@ -1207,8 +1232,8 @@
       "properties": {
         "parentItemId": {
           "type": "string",
-          "description": "The parent monday.com item ID that should receive the new subitem.",
-          "x-ms-summary": "Parent item ID"
+          "description": "The monday parent item ID. This may appear as pulseId in webhook payloads.",
+          "x-ms-summary": "Parent Item ID"
         },
         "itemName": {
           "type": "string",
@@ -1218,7 +1243,7 @@
         "columnValues": {
           "type": "string",
           "description": "Optional monday-compatible JSON string for initial subitem column values.",
-          "x-ms-summary": "Column values JSON"
+          "x-ms-summary": "Column Values JSON"
         }
       },
       "additionalProperties": false
@@ -1232,8 +1257,8 @@
       "properties": {
         "parentItemId": {
           "type": "string",
-          "description": "The parent monday.com item ID whose subitems should be returned.",
-          "x-ms-summary": "Parent item ID"
+          "description": "The monday parent item ID. This may appear as pulseId in webhook payloads.",
+          "x-ms-summary": "Parent Item ID"
         }
       },
       "additionalProperties": false
@@ -1247,7 +1272,7 @@
       "properties": {
         "subitemId": {
           "type": "string",
-          "description": "The monday.com subitem ID to retrieve. Subitems are monday items too.",
+          "description": "The monday subitem item ID. Subitems are monday items too.",
           "x-ms-summary": "Subitem ID"
         }
       },
@@ -1265,23 +1290,23 @@
       "properties": {
         "boardId": {
           "type": "string",
-          "description": "The board ID to use for the subitem column update. Classic boards may require the hidden subitems board ID; multi-level boards use the main board ID.",
+          "description": "The monday board ID. Use List monday boards or copy it from the board URL.",
           "x-ms-summary": "Board ID"
         },
         "subitemId": {
           "type": "string",
-          "description": "The monday.com subitem ID to update.",
+          "description": "The monday subitem item ID. Subitems are monday items too.",
           "x-ms-summary": "Subitem ID"
         },
         "columnId": {
           "type": "string",
-          "description": "The subitem column ID to update.",
+          "description": "The monday column ID, not the display name. Use List monday board columns to find it.",
           "x-ms-summary": "Column ID"
         },
         "value": {
           "type": "string",
-          "description": "A monday-compatible JSON string for the subitem column value, for example {\"text\":\"Example\"}.",
-          "x-ms-summary": "Column value JSON"
+          "description": "Advanced monday-compatible JSON value. Use typed actions such as Change monday date, text, number, or status when possible.",
+          "x-ms-summary": "Column Value JSON"
         }
       },
       "additionalProperties": false

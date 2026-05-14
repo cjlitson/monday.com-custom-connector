@@ -1,7 +1,7 @@
 {
-  "query": "mutation CreateMondayItemUpdate($itemId: ID!, $body: String!) { create_update(item_id: $itemId, body: $body) { id body created_at } }",
+  "query": "mutation CreateMondayItemUpdate($itemId: ID!, $updateText: String!) { create_update(item_id: $itemId, body: $updateText) { id body created_at } }",
   "variables": {
     "itemId": "<ITEM_ID>",
-    "body": "Email was sent to the requester."
+    "updateText": "Email was sent to the requester."
   }
 }

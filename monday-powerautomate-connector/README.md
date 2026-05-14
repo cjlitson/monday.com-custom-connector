@@ -51,19 +51,35 @@ monday-powerautomate-connector/
 
 ## Friendly actions
 
-### Existing preserved actions
+### Normal user-facing actions
 
 | Maker action | Operation ID | Public path | Required inputs | Optional inputs |
 | --- | --- | --- | --- | --- |
 | Get monday item details | `GetMondayItemDetails` | `POST /get-item-details` | `itemId` | None |
-| Create monday item update/comment | `CreateMondayItemUpdate` | `POST /create-update` | `itemId`, `body` | None |
+| Create monday item update/comment | `CreateMondayItemUpdate` | `POST /create-update` | `itemId`, `updateText` | None |
 | Change monday status column | `ChangeMondayStatus` | `POST /change-status` | `boardId`, `itemId`, `label` | `columnId` defaults to `status` |
-| Change monday column value | `ChangeMondayColumnValue` | `POST /change-column-value` | `boardId`, `itemId`, `columnId`, `value` | None |
+| Change monday date column | `ChangeMondayDateColumn` | `POST /change-date-column` | `boardId`, `itemId`, `columnId`, `date` | `time` |
+| Change monday text column | `ChangeMondayTextColumn` | `POST /change-text-column` | `boardId`, `itemId`, `columnId`, `text` | None |
+| Change monday number column | `ChangeMondayNumberColumn` | `POST /change-number-column` | `boardId`, `itemId`, `columnId`, `number` | None |
 | Create monday item | `CreateMondayItem` | `POST /create-item` | `boardId`, `itemName` | `groupId`, `columnValues` |
+| Create monday subitem | `CreateMondaySubitem` | `POST /create-subitem` | `parentItemId`, `itemName` | `columnValues` |
+| Get monday subitems | `GetMondaySubitems` | `POST /get-subitems` | `parentItemId` | None |
+| Get monday subitem details | `GetMondaySubitemDetails` | `POST /get-subitem-details` | `subitemId` | None |
 
-`ChangeMondayColumnValue` remains the advanced raw JSON action. Use it for monday column types that are not covered by the friendly typed actions. `value` and `columnValues` are strings containing monday-compatible JSON, for example `{"status":{"label":"Working on it"}}`.
+These are the normal user-facing actions and are marked `x-ms-visibility: important` so makers see them first in Power Automate. The create-update input is now named `updateText` in the maker experience. Existing flows or older samples that still send `body` continue to work through the connector script fallback, but new flows should use `updateText`.
 
-### Metadata/list actions for dropdowns
+### Advanced raw JSON actions
+
+| Maker action | Operation ID | Public path | When to use |
+| --- | --- | --- | --- |
+| Change monday column value | `ChangeMondayColumnValue` | `POST /change-column-value` | Advanced escape hatch for monday column types not covered by typed actions. |
+| Change monday subitem column value | `ChangeMondaySubitemColumnValue` | `POST /change-subitem-column-value` | Advanced escape hatch for subitem column types not covered by typed actions. |
+
+Raw JSON actions are marked `x-ms-visibility: advanced`. Prefer the typed date, text, number, and status actions when possible because makers do not need to handcraft monday-compatible JSON. Use raw JSON only when monday requires a column value shape that the typed actions do not yet cover.
+
+`value` and `columnValues` are strings containing monday-compatible JSON, for example `{"status":{"label":"Working on it"}}`.
+
+### Metadata/list actions for IDs and troubleshooting
 
 | Maker action | Operation ID | Public path | Purpose |
 | --- | --- | --- | --- |
@@ -73,6 +89,8 @@ monday-powerautomate-connector/
 | List monday board columns | `ListMondayBoardColumns` | `POST /list-board-columns` | Returns column `id`, `title`, `type`, and `settings_str`; exposed as a normal troubleshooting action. |
 | List monday board items | `ListMondayBoardItems` | `POST /list-board-items` | Uses `items_page`, returns item `id` and `name`, and includes `cursor` when available. |
 | List monday status labels | `ListMondayStatusLabels` | `POST /list-status-labels` | Queries board columns, finds the selected status column, parses `settings_str`, and returns label keys/titles. |
+
+These helper/list operations are marked `x-ms-visibility: advanced` because they are mainly used to look up IDs, feed future dropdowns, or troubleshoot connector behavior. Keeping them advanced reduces clutter for normal flow makers while preserving every working action.
 
 These operations return a dropdown-friendly response shape:
 
@@ -86,9 +104,21 @@ These operations return a dropdown-friendly response shape:
 }
 ```
 
+## Finding monday IDs
+
+Until dynamic dropdowns are restored, enter IDs manually:
+
+- **Board IDs**: run **List monday boards** or copy the numeric board ID from the board URL.
+- **Item IDs**: run **List monday board items**, inspect webhook payloads where item IDs may appear as `pulseId`, or open the item in monday and copy its item ID.
+- **Group IDs**: run **List monday board groups** for the board and use the returned group `id`.
+- **Column IDs**: run **List monday board columns** and use the returned column `id`, not the display name.
+- **Status labels**: run **List monday status labels** for a board and status column, then use the visible label such as `Done` or `Working on it`.
+
+Field descriptions in the connector match this guidance: board, item, group, and column fields point makers to the relevant list action, and date/time fields use `yyyy-MM-dd` and `HH:mm` formats.
+
 ## Dynamic dropdown behavior
 
-Dynamic dropdowns are temporarily disabled in the primary connector so the Swagger imports cleanly in Power Platform. Board, item, column, group, and status-label fields remain manual ID entry fields.
+Dynamic dropdowns are planned for a later version after this basic UX cleanup is stable. They remain temporarily disabled in the primary connector so the Swagger imports cleanly in Power Platform. Board, item, column, group, and status-label fields remain manual ID entry fields.
 
 The list/metadata actions remain available for direct use and testing:
 
@@ -141,7 +171,7 @@ Future/experimental native trigger work should account for monday's challenge-re
 5. Configure security with the existing API key setting. The API key header name is `Authorization`.
 6. Enable/upload custom code from `connector/script.csx` and ensure custom code is attached to all operations listed in `connector/apiProperties.json` under `scriptOperations`.
 7. Create a connection and enter the monday.com API token when prompted.
-8. Test metadata dropdown actions first, then typed column and subitem actions.
+8. Test helper/list actions first to find IDs, then test typed column, item, update, and subitem actions. Normal user-facing actions are marked important; helper/list and raw JSON actions are marked advanced.
 
 ## Validation checklist
 
@@ -156,6 +186,9 @@ Before importing, verify:
 - The primary Swagger file does **not** contain `x-ms-dynamic-values`.
 - The primary Swagger file does **not** contain `x-ms-dynamic-list`.
 - No `required` array is empty.
+- Every body parameter has a friendly `x-ms-summary`.
+- User-facing actions are marked `x-ms-visibility: important`.
+- Helper/list and raw JSON actions are marked `x-ms-visibility: advanced`.
 - No monday.com API token or secret is committed.
 - README import instructions and test payloads are present.
 
@@ -185,9 +218,11 @@ Sample file: `samples/create-update.json`
 ```json
 {
   "itemId": "<ITEM_ID>",
-  "body": "Email was sent to the requester."
+  "updateText": "Email was sent to the requester."
 }
 ```
+
+Backward compatibility note: `script.csx` still accepts the old `body` property for existing flows, but new samples and maker-facing fields use `updateText`.
 
 ### Change monday status column
 
