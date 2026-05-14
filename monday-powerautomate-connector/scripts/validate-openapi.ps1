@@ -27,6 +27,33 @@ $expectedOperationIds = @(
     "ChangeMondaySubitemColumnValue"
 )
 
+$userFacingOperationIds = @(
+    "GetMondayItemDetails",
+    "CreateMondayItemUpdate",
+    "ChangeMondayStatus",
+    "ChangeMondayDateColumn",
+    "ChangeMondayTextColumn",
+    "ChangeMondayNumberColumn",
+    "CreateMondayItem",
+    "CreateMondaySubitem",
+    "GetMondaySubitems",
+    "GetMondaySubitemDetails"
+)
+
+$helperOperationIds = @(
+    "ListMondayWorkspaces",
+    "ListMondayBoards",
+    "ListMondayBoardGroups",
+    "ListMondayBoardColumns",
+    "ListMondayBoardItems",
+    "ListMondayStatusLabels"
+)
+
+$rawJsonOperationIds = @(
+    "ChangeMondayColumnValue",
+    "ChangeMondaySubitemColumnValue"
+)
+
 $resolvedPath = Resolve-Path -Path $SwaggerPath
 $resolvedApiPropertiesPath = Resolve-Path -Path $ApiPropertiesPath
 $repoRoot = Resolve-Path -Path (Join-Path $PSScriptRoot "../../")
@@ -197,6 +224,45 @@ if ($emptyRequiredArrays) {
     exit 1
 }
 
+$bodyParametersMissingSummary = New-Object System.Collections.Generic.List[string]
+$visibilityErrors = New-Object System.Collections.Generic.List[string]
+foreach ($pathProperty in $swagger.paths.PSObject.Properties) {
+    foreach ($methodProperty in $pathProperty.Value.PSObject.Properties) {
+        $operation = $methodProperty.Value
+        $operationId = [string]$operation.operationId
+        if (-not $operationId) { continue }
+
+        $expectedVisibility = $null
+        if ($userFacingOperationIds -contains $operationId) {
+            $expectedVisibility = "important"
+        }
+        elseif (($helperOperationIds -contains $operationId) -or ($rawJsonOperationIds -contains $operationId)) {
+            $expectedVisibility = "advanced"
+        }
+
+        $actualVisibility = $operation."x-ms-visibility"
+        if ($expectedVisibility -and $actualVisibility -ne $expectedVisibility) {
+            $visibilityErrors.Add("$operationId expected x-ms-visibility '$expectedVisibility' but found '$actualVisibility'")
+        }
+
+        foreach ($parameter in @($operation.parameters)) {
+            if ($parameter.in -eq "body" -and $parameter.name -eq "body" -and -not $parameter."x-ms-summary") {
+                $bodyParametersMissingSummary.Add("$operationId at $($pathProperty.Name) $($methodProperty.Name)")
+            }
+        }
+    }
+}
+
+if ($bodyParametersMissingSummary.Count -gt 0) {
+    Write-Error "Body parameters missing x-ms-summary: $($bodyParametersMissingSummary -join '; ')."
+    exit 1
+}
+
+if ($visibilityErrors.Count -gt 0) {
+    Write-Error "Operation visibility errors: $($visibilityErrors -join '; ')."
+    exit 1
+}
+
 $secretPatterns = @(
     'monday[_-]?api[_-]?token\s*[:=]\s*[A-Za-z0-9_\-]{20,}',
     'Authorization\s*[:=]\s*Bearer\s+[A-Za-z0-9_\-\.]{20,}',
@@ -214,4 +280,4 @@ foreach ($file in $filesToScan) {
     }
 }
 
-Write-Host "OpenAPI and apiProperties JSON are valid. Swagger 2.0 is preserved, x-ms-paths is absent, x-ms-dynamic-values is absent, x-ms-dynamic-list is absent, required arrays are non-empty when present, operationIds and POST paths are unique, scriptOperations cover every scripted action, and no token/secret patterns were found."
+Write-Host "OpenAPI and apiProperties JSON are valid. Swagger 2.0 is preserved, x-ms-paths is absent, x-ms-dynamic-values is absent, x-ms-dynamic-list is absent, required arrays are non-empty when present, operationIds and POST paths are unique, body parameters have x-ms-summary, action visibility matches the UX rules, scriptOperations cover every scripted action, and no token/secret patterns were found."
