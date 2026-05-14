@@ -56,9 +56,9 @@
         ],
         "responses": {
           "200": {
-            "description": "monday.com GraphQL response containing item details.",
+            "description": "Flattened monday.com item details response with direct dynamic content fields.",
             "schema": {
-              "$ref": "#/definitions/MondayGraphQlResponse"
+              "$ref": "#/definitions/GetMondayItemDetailsResponse"
             }
           },
           "400": {
@@ -860,6 +860,73 @@
           "type": "string",
           "description": "The monday item ID. This may appear as pulseId in webhook payloads.",
           "x-ms-summary": "Item ID"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GetMondayItemDetailsResponse": {
+      "type": "object",
+      "description": "Flattened response for the Get monday item details action. It exposes stable item, board, group, and parent item fields as direct dynamic content and keeps dynamic board column values as JSON.",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "True when monday.com returned an item; false when monday.com returned errors, non-JSON content, or no accessible item.",
+          "x-ms-summary": "Success"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable result message, such as Item found, the monday.com error text, or an item-not-found/access message.",
+          "x-ms-summary": "Message"
+        },
+        "itemId": {
+          "type": "string",
+          "description": "The requested monday item ID, or the item ID returned by monday.com when an item is found.",
+          "x-ms-summary": "Item ID"
+        },
+        "itemName": {
+          "type": "string",
+          "description": "The name of the monday.com item when an item is found.",
+          "x-ms-summary": "Item Name"
+        },
+        "boardId": {
+          "type": "string",
+          "description": "The ID of the monday.com board that contains the item when monday.com returns board details.",
+          "x-ms-summary": "Board ID"
+        },
+        "boardName": {
+          "type": "string",
+          "description": "The name of the monday.com board that contains the item when monday.com returns board details.",
+          "x-ms-summary": "Board Name"
+        },
+        "groupId": {
+          "type": "string",
+          "description": "The ID of the group that contains the item when monday.com returns group details.",
+          "x-ms-summary": "Group ID"
+        },
+        "groupName": {
+          "type": "string",
+          "description": "The name/title of the group that contains the item when monday.com returns group details.",
+          "x-ms-summary": "Group Name"
+        },
+        "parentItemId": {
+          "type": "string",
+          "description": "The parent item ID when the item is a subitem; otherwise this field is blank or null.",
+          "x-ms-summary": "Parent Item ID"
+        },
+        "parentItemName": {
+          "type": "string",
+          "description": "The parent item name when the item is a subitem; otherwise this field is blank or null.",
+          "x-ms-summary": "Parent Item Name"
+        },
+        "columnValuesJson": {
+          "type": "string",
+          "description": "Compact JSON string containing the monday.com column_values array. This remains JSON because board columns and their value shapes are dynamic by board.",
+          "x-ms-summary": "Column Values JSON"
+        },
+        "rawResponseJson": {
+          "type": "string",
+          "description": "Compact JSON string containing the full monday.com response, or the raw non-JSON response text if monday.com did not return JSON.",
+          "x-ms-summary": "Raw Response JSON"
         }
       },
       "additionalProperties": false

@@ -68,6 +68,8 @@ monday-powerautomate-connector/
 
 These are the normal user-facing actions and are marked `x-ms-visibility: important` so makers see them first in Power Automate. The create-update input is now named `updateText` in the maker experience. Existing flows or older samples that still send `body` continue to work through the connector script fallback, but new flows should use `updateText`.
 
+**Get monday item details** now returns direct dynamic content fields instead of only the raw monday.com GraphQL envelope. In Power Automate, makers should be able to select fields such as `success`, `message`, `itemId`, `itemName`, `boardId`, `boardName`, `groupId`, `groupName`, `parentItemId`, and `parentItemName` directly from dynamic content without adding a separate **Parse JSON** action. `columnValuesJson` is still returned as a compact JSON string because monday board columns and column value shapes are dynamic by board; use it when the flow needs board-specific column data. `rawResponseJson` remains available for troubleshooting.
+
 ### Advanced raw JSON actions
 
 | Maker action | Operation ID | Public path | When to use |
@@ -171,7 +173,7 @@ Future/experimental native trigger work should account for monday's challenge-re
 5. Configure security with the existing API key setting. The API key header name is `Authorization`.
 6. Enable/upload custom code from `connector/script.csx` and ensure custom code is attached to all operations listed in `connector/apiProperties.json` under `scriptOperations`.
 7. Create a connection and enter the monday.com API token when prompted.
-8. Test helper/list actions first to find IDs, then test typed column, item, update, and subitem actions. Normal user-facing actions are marked important; helper/list and raw JSON actions are marked advanced.
+8. Test helper/list actions first to find IDs, then test **Get monday item details** and confirm its flattened fields appear as dynamic content. Then test typed column, item, update, and subitem actions. Normal user-facing actions are marked important; helper/list and raw JSON actions are marked advanced.
 
 ## Validation checklist
 
@@ -182,6 +184,7 @@ Before importing, verify:
 - Operation IDs are unique.
 - Public POST paths are unique.
 - `scriptOperations` include every scripted operation.
+- `GetMondayItemDetails` 200 responses reference `GetMondayItemDetailsResponse`, and every user-facing response property has `x-ms-summary`.
 - The primary Swagger file does **not** contain `x-ms-paths`.
 - The primary Swagger file does **not** contain `x-ms-dynamic-values`.
 - The primary Swagger file does **not** contain `x-ms-dynamic-list`.

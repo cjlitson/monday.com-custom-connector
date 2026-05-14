@@ -45,6 +45,11 @@ public class Script : ScriptBase
         }
 
         HttpResponseMessage response = await this.Context.SendAsync(request, this.CancellationToken).ConfigureAwait(false);
+        if (operationId == "GetMondayItemDetails")
+        {
+            return await BuildGetMondayItemDetailsResponseAsync(input, response).ConfigureAwait(false);
+        }
+
         if (!IsMetadataListOperation(operationId))
         {
             return response;
@@ -447,6 +452,101 @@ public class Script : ScriptBase
         return GraphQl(
             $"mutation {operationName}($boardId: ID!, $itemId: ID!, $columnId: String!, $columnValue: JSON!) {{ change_column_value(board_id: $boardId, item_id: $itemId, column_id: $columnId, value: $columnValue) {{ id }} }}",
             new JObject { ["boardId"] = boardId, ["itemId"] = itemId, ["columnId"] = columnId, ["columnValue"] = value });
+    }
+
+    private static async Task<HttpResponseMessage> BuildGetMondayItemDetailsResponseAsync(JObject input, HttpResponseMessage mondayResponse)
+    {
+        string itemId = OptionalString(input, "itemId");
+        string content = mondayResponse.Content == null ? null : await mondayResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+        JObject raw;
+
+        try
+        {
+            raw = JObject.Parse(content ?? string.Empty);
+        }
+        catch (JsonException)
+        {
+            JObject nonJsonBody = new JObject
+            {
+                ["success"] = false,
+                ["message"] = "monday.com returned a non-JSON response.",
+                ["itemId"] = itemId,
+                ["rawResponseJson"] = content ?? string.Empty
+            };
+
+            return JsonResponse(mondayResponse.StatusCode, nonJsonBody);
+        }
+
+        string rawResponseJson = raw.ToString(Newtonsoft.Json.Formatting.None);
+        JArray errors = raw["errors"] as JArray;
+        if (errors != null && errors.Count > 0)
+        {
+            JObject errorBody = new JObject
+            {
+                ["success"] = false,
+                ["message"] = BuildMondayErrorMessage(errors),
+                ["itemId"] = itemId,
+                ["rawResponseJson"] = rawResponseJson
+            };
+
+            return JsonResponse(mondayResponse.StatusCode, errorBody);
+        }
+
+        JToken item = raw.SelectToken("data.items[0]");
+        if (item == null || item.Type == JTokenType.Null)
+        {
+            JObject notFoundBody = new JObject
+            {
+                ["success"] = false,
+                ["message"] = "Item not found or token does not have access to this item.",
+                ["itemId"] = itemId,
+                ["rawResponseJson"] = rawResponseJson
+            };
+
+            return JsonResponse(mondayResponse.StatusCode, notFoundBody);
+        }
+
+        JToken columnValues = item["column_values"];
+        JObject body = new JObject
+        {
+            ["success"] = true,
+            ["message"] = "Item found.",
+            ["itemId"] = AsString(item["id"]) ?? itemId,
+            ["itemName"] = AsString(item["name"]),
+            ["boardId"] = AsString(item["board"]?["id"]),
+            ["boardName"] = AsString(item["board"]?["name"]),
+            ["groupId"] = AsString(item["group"]?["id"]),
+            ["groupName"] = AsString(item["group"]?["title"]),
+            ["parentItemId"] = AsString(item["parent_item"]?["id"]),
+            ["parentItemName"] = AsString(item["parent_item"]?["name"]),
+            ["columnValuesJson"] = columnValues == null || columnValues.Type == JTokenType.Null ? "[]" : columnValues.ToString(Newtonsoft.Json.Formatting.None),
+            ["rawResponseJson"] = rawResponseJson
+        };
+
+        return JsonResponse(mondayResponse.StatusCode, body);
+    }
+
+    private static string BuildMondayErrorMessage(JArray errors)
+    {
+        JArray messages = new JArray();
+        foreach (JToken error in errors)
+        {
+            string message = AsString(error["message"]);
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                messages.Add(message);
+            }
+        }
+
+        return messages.Count == 0 ? "monday.com returned an error." : string.Join("; ", messages.Values<string>());
+    }
+
+    private static HttpResponseMessage JsonResponse(HttpStatusCode statusCode, JObject body)
+    {
+        return new HttpResponseMessage(statusCode)
+        {
+            Content = new StringContent(body.ToString(Newtonsoft.Json.Formatting.None), Encoding.UTF8, "application/json")
+        };
     }
 
     private static async Task<HttpResponseMessage> BuildDropdownResponseAsync(string operationId, JObject input, HttpResponseMessage mondayResponse)
