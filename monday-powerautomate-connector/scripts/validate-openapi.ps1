@@ -224,6 +224,49 @@ if ($emptyRequiredArrays) {
     exit 1
 }
 
+$getItemDetailsResponseRef = $swagger.paths."/get-item-details".post.responses."200".schema."`$ref"
+if ($getItemDetailsResponseRef -ne "#/definitions/GetMondayItemDetailsResponse") {
+    Write-Error "GetMondayItemDetails 200 response must reference #/definitions/GetMondayItemDetailsResponse but found '$getItemDetailsResponseRef'."
+    exit 1
+}
+
+$getItemDetailsResponse = $swagger.definitions.GetMondayItemDetailsResponse
+if (-not $getItemDetailsResponse) {
+    Write-Error "Missing GetMondayItemDetailsResponse definition."
+    exit 1
+}
+
+$expectedGetItemDetailsResponseProperties = @(
+    "success",
+    "message",
+    "itemId",
+    "itemName",
+    "boardId",
+    "boardName",
+    "groupId",
+    "groupName",
+    "parentItemId",
+    "parentItemName",
+    "columnValuesJson",
+    "rawResponseJson"
+)
+
+$missingGetItemDetailsResponseSummaries = New-Object System.Collections.Generic.List[string]
+foreach ($propertyName in $expectedGetItemDetailsResponseProperties) {
+    $property = $getItemDetailsResponse.properties.PSObject.Properties[$propertyName]
+    if (-not $property) {
+        $missingGetItemDetailsResponseSummaries.Add("$propertyName missing from GetMondayItemDetailsResponse")
+    }
+    elseif (-not $property.Value."x-ms-summary") {
+        $missingGetItemDetailsResponseSummaries.Add("$propertyName missing x-ms-summary")
+    }
+}
+
+if ($missingGetItemDetailsResponseSummaries.Count -gt 0) {
+    Write-Error "GetMondayItemDetailsResponse user-facing property summary errors: $($missingGetItemDetailsResponseSummaries -join '; ')."
+    exit 1
+}
+
 $bodyParametersMissingSummary = New-Object System.Collections.Generic.List[string]
 $visibilityErrors = New-Object System.Collections.Generic.List[string]
 foreach ($pathProperty in $swagger.paths.PSObject.Properties) {
@@ -280,4 +323,4 @@ foreach ($file in $filesToScan) {
     }
 }
 
-Write-Host "OpenAPI and apiProperties JSON are valid. Swagger 2.0 is preserved, x-ms-paths is absent, x-ms-dynamic-values is absent, x-ms-dynamic-list is absent, required arrays are non-empty when present, operationIds and POST paths are unique, body parameters have x-ms-summary, action visibility matches the UX rules, scriptOperations cover every scripted action, and no token/secret patterns were found."
+Write-Host "OpenAPI and apiProperties JSON are valid. Swagger 2.0 is preserved, GetMondayItemDetails returns GetMondayItemDetailsResponse with x-ms-summary values, x-ms-paths is absent, x-ms-dynamic-values is absent, x-ms-dynamic-list is absent, required arrays are non-empty when present, operationIds and POST paths are unique, body parameters have x-ms-summary, action visibility matches the UX rules, scriptOperations cover every scripted action, and no token/secret patterns were found."
